@@ -1,120 +1,138 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-const allPackages = [
-  {
-    id: 1,
-    title: "Paris Romance Package",
-    destination: "Paris, France",
-    region: "Europe",
-    country: "France",
-    price: 1299,
-    days: 6,
-    rating: 4.9,
-    reviews: "1.2k",
-    badge: "Featured",
-    description: "Spend six dreamy days walking down historic avenues, cruising the Seine, and visiting magnificent galleries.",
-    image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 2,
-    title: "Bali Tropical Paradise",
-    destination: "Bali, Indonesia",
-    region: "Asia",
-    country: "Indonesia",
-    price: 949,
-    days: 8,
-    rating: 4.85,
-    reviews: "940",
-    badge: "Best Seller",
-    description: "Explore lush sacred forests, rest at luxurious private villas, and enjoy world-class beaches and local food.",
-    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 3,
-    title: "Kyoto Cultural Heritage",
-    destination: "Kyoto, Japan",
-    region: "Asia",
-    country: "Japan",
-    price: 1450,
-    days: 7,
-    rating: 4.92,
-    reviews: "810",
-    badge: "Trending",
-    description: "Immerse yourself in traditional temples, gorgeous tea houses, and tranquil bamboo trails in historic Kyoto.",
-    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 4,
-    title: "New York City Explorer",
-    destination: "New York, USA",
-    region: "Americas",
-    country: "USA",
-    price: 1100,
-    days: 5,
-    rating: 4.76,
-    reviews: "1,050",
-    badge: "Seasonal",
-    description: "Catch a Broadway play, walk across the Brooklyn Bridge, shop along Fifth Avenue, and take in the panoramic skyline from top decks.",
-    image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 5,
-    title: "Sydney Harbour Experience",
-    destination: "Sydney, Australia",
-    region: "Oceania",
-    country: "Australia",
-    price: 1850,
-    days: 9,
-    rating: 4.88,
-    reviews: "620",
-    badge: "Explore",
-    description: "Sail past the Opera House, sunbathe on Bondi Beach, explore the historic Rocks district, and escape into the Blue Mountains.",
-    image: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: 6,
-    title: "Swiss Alps Luxury Adventure",
-    destination: "Swiss Alps, Switzerland",
-    region: "Europe",
-    country: "Switzerland",
-    price: 1699,
-    days: 7,
-    rating: 4.95,
-    reviews: "510",
-    badge: "Luxury",
-    description: "Breathe the crisp mountain air, ski down world-class runs, relax in thermal baths, and ride scenic glass-domed cog railways.",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80"
-  }
-];
+// const allPackages = [
+//   {
+//     id: 1,
+//     title: "Paris Romance Package",
+//     destination: "Paris, France",
+//     region: "Europe",
+//     country: "France",
+//     price: 32050,
+//     days: 6,
+//     rating: 4.9,
+//     reviews: "1.2k",
+//     badge: "Featured",
+//     description: "Spend six dreamy days walking down historic avenues, cruising the Seine, and visiting magnificent galleries.",
+//     image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80"
+//   },
+//   {
+//     id: 2,
+//     title: "Bali Tropical Paradise",
+//     destination: "Bali, Indonesia",
+//     region: "Asia",
+//     country: "Indonesia",
+//     price: 40320,
+//     days: 8,
+//     rating: 4.85,
+//     reviews: "940",
+//     badge: "Best Seller",
+//     description: "Explore lush sacred forests, rest at luxurious private villas, and enjoy world-class beaches and local food.",
+//     image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80"
+//   },
+//   {
+//     id: 3,
+//     title: "Kyoto Cultural Heritage",
+//     destination: "Kyoto, Japan",
+//     region: "Asia",
+//     country: "Japan",
+//     price: 55620,
+//     days: 7,
+//     rating: 4.92,
+//     reviews: "810",
+//     badge: "Trending",
+//     description: "Immerse yourself in traditional temples, gorgeous tea houses, and tranquil bamboo trails in historic Kyoto.",
+//     image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80"
+//   },
+//   {
+//     id: 4,
+//     title: "New York City Explorer",
+//     destination: "New York, USA",
+//     region: "Americas",
+//     country: "USA",
+//     price: 60520,
+//     days: 5,
+//     rating: 4.76,
+//     reviews: "1,050",
+//     badge: "Seasonal",
+//     description: "Catch a Broadway play, walk across the Brooklyn Bridge, shop along Fifth Avenue, and take in the panoramic skyline from top decks.",
+//     image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80"
+//   },
+//   {
+//     id: 5,
+//     title: "Sydney Harbour Experience",
+//     destination: "Sydney, Australia",
+//     region: "Oceania",
+//     country: "Australia",
+//     price: 56052,
+//     days: 9,
+//     rating: 4.88,
+//     reviews: "620",
+//     badge: "Explore",
+//     description: "Sail past the Opera House, sunbathe on Bondi Beach, explore the historic Rocks district, and escape into the Blue Mountains.",
+//     image: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=800&q=80"
+//   },
+//   {
+//     id: 6,
+//     title: "Swiss Alps Luxury Adventure",
+//     destination: "Swiss Alps, Switzerland",
+//     region: "Europe",
+//     country: "Switzerland",
+//     price: 69000,
+//     days: 7,
+//     rating: 4.95,
+//     reviews: "510",
+//     badge: "Luxury",
+//     description: "Breathe the crisp mountain air, ski down world-class runs, relax in thermal baths, and ride scenic glass-domed cog railways.",
+//     image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80"
+//   }
+// ];
 
 
 export default function Search() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [allPackages, setPackage] = useState([])
+  // Login input states
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
-        // Login input states
-      const [email, setEmail] = useState("");
-      const [password, setPassword] = useState("");
-      const [rememberMe, setRememberMe] = useState(false);
-    
-      // Safely parse local storage registration data and establish the active logged-in user state
-      const [user, setUser] = useState(() => {
-        try {
-          const registrationData = localStorage.getItem('RegistrationData');
-          if (registrationData) {
-            const parsedData = JSON.parse(registrationData);
-            // Fallback to extraction from email if name wasn't explicitly saved
-            return {
-              name: parsedData.name || parsedData.email.split('@')[0],
-              email: parsedData.email
-            };
-          }
-        } catch (error) {
-          console.error("Failed to parse RegistrationData from localStorage", error);
-        }
-        return null;
-      });
+  useEffect(() => {
+    const fetchData = async()=>{
+      try{
+    const response = await axios.get("http://localhost:5000/api/package");
+    if (response) {
+      setPackage(response.data);
+    }
+    else {
+      alert("error couldn't find the details");
+    }
+  }
+  catch(err){
+    console.error("API error:", err);
+  }
+  };
+  fetchData();
+},[])
+  // Safely parse local storage registration data and establish the active logged-in user state
+  const [user, setUser] = useState(() => {
+    try {
+      const registrationData = localStorage.getItem('RegistrationData');
+      if (registrationData) {
+        const parsedData = JSON.parse(registrationData);
+        // Fallback to extraction from email if name wasn't explicitly saved
+        return {
+          name: parsedData.name || parsedData.email.split('@')[0],
+          email: parsedData.email
+        };
+      }
+    } catch (error) {
+      console.error("Failed to parse RegistrationData from localStorage", error);
+    }
+    return null;
+  });
   const handleLogout = () => {
     setUser(null);
     // localStorage.removeItem('RegistrationData');
@@ -251,9 +269,12 @@ export default function Search() {
     const anyPriceSelected = Object.values(selectedPrices).some(Boolean);
     if (anyPriceSelected) {
       let priceMatch = false;
-      if (selectedPrices.under1000 && pkg.price < 1000) priceMatch = true;
-      if (selectedPrices.middle1000to1500 && pkg.price >= 1000 && pkg.price <= 1500) priceMatch = true;
-      if (selectedPrices.above1500 && pkg.price > 1500) priceMatch = true;
+
+      const currentPrice = Number(pkg.price);
+
+      if (selectedPrices.under1000 && currentPrice< 1000) priceMatch = true;
+      if (selectedPrices.middle1000to1500 && currentPrice >= 1000 && currentPrice <= 1500) priceMatch = true;
+      if (selectedPrices.above1500 && currentPrice > 1500) priceMatch = true;
       if (!priceMatch) return false;
     }
 
@@ -261,9 +282,10 @@ export default function Search() {
     const anyDurationSelected = Object.values(selectedDurations).some(Boolean);
     if (anyDurationSelected) {
       let durationMatch = false;
-      if (selectedDurations.short1to5 && pkg.days <= 5) durationMatch = true;
-      if (selectedDurations.medium6to8 && pkg.days >= 6 && pkg.days <= 8) durationMatch = true;
-      if (selectedDurations.long9plus && pkg.days >= 9) durationMatch = true;
+      const suday= Number(pkg.days)
+      if (selectedDurations.short1to5 && suday <= 5) durationMatch = true;
+      if (selectedDurations.medium6to8 && suday >= 6 && pkg.days <= 8) durationMatch = true;
+      if (selectedDurations.long9plus && suday >= 9) durationMatch = true;
       if (!durationMatch) return false;
     }
 
@@ -281,7 +303,7 @@ export default function Search() {
   return (
     <div>
       <title>Search Packages — TripAgent</title>
-      
+
       {/* <!-- Header --> */}
       <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container nav">
@@ -294,31 +316,31 @@ export default function Search() {
             <li><Link to="/search" className="active">Search</Link></li>
             <li><Link to="/booking">Booking</Link></li>
             {user ? (
-                    <li className="mobile-only-user">
-                      <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
-                      <button onClick={handleLogout} className="btn-logout-link">Logout</button>
-                    </li>
-                  ) : (
-                    <li><Link to="/Login">Login</Link></li>
-                  )}
+              <li className="mobile-only-user">
+                <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
+                <button onClick={handleLogout} className="btn-logout-link">Logout</button>
+              </li>
+            ) : (
+              <li><Link to="/Login">Login</Link></li>
+            )}
           </ul>
           <div className="nav-cta">
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
           </div>
-            {user && (
-              <div className="user-profile-banner">
-                <div className="user-text-avatar">
-                  {initialLetter}
-                </div>
-                <div className="user-info-dropdown">
-                  <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-                  <span className="user-email-sub">{user.email}</span>
-                  <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-                </div>
+          {user && (
+            <div className="user-profile-banner">
+              <div className="user-text-avatar">
+                {initialLetter}
               </div>
-            )}
-          <div 
-            className={`nav-toggle ${menuOpen ? 'active' : ''}`} 
+              <div className="user-info-dropdown">
+                <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
+                <span className="user-email-sub">{user.email}</span>
+                <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
+              </div>
+            </div>
+          )}
+          <div
+            className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
             onClick={() => setMenuOpen(!menuOpen)}
           >
@@ -348,12 +370,12 @@ export default function Search() {
               <h4>Keywords <i data-lucide="search" style={{ width: '16px', height: '16px', color: 'var(--primary)' }}></i></h4>
               <div className="input-with-icon">
                 <i data-lucide="search"></i>
-                <input 
-                  type="text" 
-                  placeholder="e.g. beach, temple..." 
+                <input
+                  type="text"
+                  placeholder="e.g. beach, temple..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ padding: '10px 10px 10px 38px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--surface-alt)', fontSize: '0.85rem' }} 
+                  style={{ padding: '10px 10px 10px 38px', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--surface-alt)', fontSize: '0.85rem' }}
                 />
               </div>
             </div>
@@ -385,15 +407,15 @@ export default function Search() {
               <div className="filter-checkboxes">
                 <label className="checkbox-group">
                   <input type="checkbox" checked={selectedPrices.under1000} onChange={() => handlePriceChange("under1000")} />
-                  <span>Under $1,000</span>
+                  <span>Under &#8377;30,000</span>
                 </label>
                 <label className="checkbox-group">
                   <input type="checkbox" checked={selectedPrices.middle1000to1500} onChange={() => handlePriceChange("middle1000to1500")} />
-                  <span>$1,000 - $1,500</span>
+                  <span>&#8377;56,000 - &#8377;45,500</span>
                 </label>
                 <label className="checkbox-group">
                   <input type="checkbox" checked={selectedPrices.above1500} onChange={() => handlePriceChange("above1500")} />
-                  <span>Above $1,500</span>
+                  <span>Above &#8377;43,500</span>
                 </label>
               </div>
             </div>
@@ -452,7 +474,7 @@ export default function Search() {
                     <h3>{pkg.title}</h3>
                     <p>{pkg.description}</p>
                     <div className="card-footer">
-                      <div className="card-price">${pkg.price.toLocaleString()} <span>/ person</span></div>
+                      <div className="card-price">&#8377;{pkg.price.toLocaleString()} <span>/ person</span></div>
                       <Link to={`/booking?destination=${pkg.id === 1 ? 'paris' : pkg.id === 2 ? 'bali' : pkg.id === 3 ? 'kyoto' : pkg.id === 4 ? 'newyork' : pkg.id === 5 ? 'sydney' : 'alps'}`} className="btn btn-outline btn-sm">Book Deal</Link>
                     </div>
                   </div>

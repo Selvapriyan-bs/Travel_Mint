@@ -822,10 +822,6 @@ a {
   gap: 24px;
 }
 
-.form-col-full {
-  grid-column: span 2;
-}
-
 .booking-form-card label {
   font-size: 0.85rem;
   font-weight: 700;
@@ -3101,4 +3097,7 @@ tbody tr:hover {
   .mobile-only-user {
     display: flex;
   }
+}
+.row{
+ display: flex;
 }

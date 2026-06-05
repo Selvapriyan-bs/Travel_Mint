@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 const destinationsData = {
   paris: { name: "Paris, France", price: 1299, days: 6 },
@@ -16,39 +17,55 @@ export default function Booking() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Form State
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [destination, setDestination] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
-  const [guests, setGuests] = useState("1");
+  // Centralized Form State
+  const [details, setDetails] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    from: "",
+    destination: "",
+    departureDate: "",
+    returnDate: "",
+    guests: "1", // Initialized as string to match dropdown values safely
+  });
+
   const [user, setUser] = useState(() => {
-        try {
-          const registrationData = localStorage.getItem('RegistrationData');
-          if (registrationData) {
-            const parsedData = JSON.parse(registrationData);
-            // Fallback to extraction from email if name wasn't explicitly saved
-            return {
-              name: parsedData.name || parsedData.email.split('@')[0],
-              email: parsedData.email
-            };
-          }
-        } catch (error) {
-          console.error("Failed to parse RegistrationData from localStorage", error);
-        }
-        return null;
-      });
+    try {
+      const registrationData = localStorage.getItem('RegistrationData');
+      if (registrationData) {
+        const parsedData = JSON.parse(registrationData);
+        return {
+          name: parsedData.name || parsedData.email.split('@')[0],
+          email: parsedData.email
+        };
+      }
+    } catch (error) {
+      console.error("Failed to parse RegistrationData from localStorage", error);
+    }
+    return null;
+  });
 
   // Parse query parameter to pre-select destination
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const destParam = params.get('destination');
     if (destParam && destinationsData[destParam.toLowerCase()]) {
-      setDestination(destParam.toLowerCase());
+      setDetails(prev => ({
+        ...prev,
+        destination: destParam.toLowerCase()
+      }));
     }
   }, [location]);
+
+  // Fixed the event targets safely
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,7 +75,6 @@ export default function Booking() {
         setScrolled(false);
       }
     };
-
     window.addEventListener('scroll', handleScroll);
 
     // Dynamically load Lucide CDN script to initialize icons
@@ -88,20 +104,38 @@ export default function Booking() {
     if (window.lucide) {
       window.lucide.createIcons();
     }
-  }, [destination, guests, menuOpen]);
+  }, [details.destination, details.guests, menuOpen]);
 
   // Derived Summary calculations
-  const selectedDest = destinationsData[destination];
+  const selectedDest = destinationsData[details.destination];
   const destName = selectedDest ? selectedDest.name : "—";
   const duration = selectedDest ? `${selectedDest.days} Days` : "—";
-  const guestCount = parseInt(guests, 10) || 1;
+  const guestCount = parseInt(details.guests, 10) || 1;
   const pricePerPerson = selectedDest ? selectedDest.price : 0;
   const totalPrice = pricePerPerson * guestCount;
 
-  const handleBookingSubmit = (e) => {
+  // Closed this handler block correctly
+  const handleBookingSubmit = async (e) => {
     if (e) e.preventDefault();
-    alert(`Thank you, ${name}! Your booking for ${guestCount} traveler(s) to ${destName} has been confirmed. Estimated total: $${totalPrice.toLocaleString()}.`);
+    try {
+      const res = await axios.post("http://localhost:5000/api/booking/add", details);
+      alert(res.data.message || "Details Received");
+    } catch (error) {
+      setDetails({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        from: "",
+        destination: "",
+        departureDate: "",
+        returnDate: "",
+        guests: "1",
+      });
+      alert(error.response?.data?.message || "Details storage failed");
+    }
   };
+
   const handleLogout = () => {
     setUser(null);
     // localStorage.removeItem('RegistrationData');
@@ -110,11 +144,12 @@ export default function Booking() {
 
   // Helper variable to pull the starting letter cleanly
   const initialLetter = user && user.name ? user.name.charAt(0).toUpperCase() : "";
+
   return (
     <div>
       <title>Book Your Journey — TripAgent</title>
-      
-      {/* <!-- Header --> */}
+
+      {/* */}
       <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container nav">
           <Link to="/" className="logo">
@@ -126,31 +161,31 @@ export default function Booking() {
             <li><Link to="/search">Search</Link></li>
             <li><Link to="/booking" className="active">Booking</Link></li>
             {user ? (
-                      <li className="mobile-only-user">
-                        <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
-                        <button onClick={handleLogout} className="btn-logout-link">Logout</button>
-                      </li>
-                    ) : (
-                      <li><Link to="/Login">Login</Link></li>
-                    )}
+              <li className="mobile-only-user">
+                <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
+                <button onClick={handleLogout} className="btn-logout-link">Logout</button>
+              </li>
+            ) : (
+              <li><Link to="/Login">Login</Link></li>
+            )}
           </ul>
           <div className="nav-cta">
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
           </div>
           {user && (
-              <div className="user-profile-banner">
-                <div className="user-text-avatar">
-                  {initialLetter}
-                </div>
-                <div className="user-info-dropdown">
-                  <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-                  <span className="user-email-sub">{user.email}</span>
-                  <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-                </div>
+            <div className="user-profile-banner">
+              <div className="user-text-avatar">
+                {initialLetter}
               </div>
-            )}
-          <div 
-            className={`nav-toggle ${menuOpen ? 'active' : ''}`} 
+              <div className="user-info-dropdown">
+                <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
+                <span className="user-email-sub">{user.email}</span>
+                <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
+              </div>
+            </div>
+          )}
+          <div
+            className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
             onClick={() => setMenuOpen(!menuOpen)}
           >
@@ -161,7 +196,7 @@ export default function Booking() {
         </div>
       </header>
 
-      {/* <!-- Hero Section --> */}
+      {/* */}
       <section className="hero" style={{ minHeight: '40vh' }}>
         <div className="hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1600&q=80')" }}></div>
         <div className="hero-overlay"></div>
@@ -171,26 +206,42 @@ export default function Booking() {
         </div>
       </section>
 
-      {/* <!-- Booking Section --> */}
+      {/* */}
       <main className="container section">
         <div className="booking-layout animate-fade-in" style={{ animationDelay: '0.1s' }}>
-          {/* <!-- Form Panel --> */}
+          {/* */}
           <section className="booking-form-card">
             <h2>Enter Passenger & Trip Details</h2>
             <form id="bookingForm" onSubmit={handleBookingSubmit}>
               <div className="form-grid">
                 <div className="form-col-full">
-                  <label htmlFor="name"><i data-lucide="user"></i> Full Name</label>
-                  <div className="input-with-icon">
-                    <i data-lucide="user"></i>
-                    <input 
-                      type="text" 
-                      id="name" 
-                      name="name" 
-                      placeholder="John Doe" 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required 
+                  <label htmlFor="firstName"><i data-lucide="user"></i> First Name</label>
+                  <div className="row g-3">
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={details.firstName}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="First name"
+                      aria-label="First name"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="lastName"><i data-lucide="user"></i> Last Name</label>
+                  <div className="row g-3">
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={details.lastName}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="Last name"
+                      aria-label="Last name"
                     />
                   </div>
                 </div>
@@ -198,15 +249,14 @@ export default function Booking() {
                 <div>
                   <label htmlFor="email"><i data-lucide="mail"></i> Email Address</label>
                   <div className="input-with-icon">
-                    <i data-lucide="mail"></i>
-                    <input 
-                      type="email" 
-                      id="email" 
-                      name="email" 
-                      placeholder="john@example.com" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required 
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="john@example.com"
+                      value={details.email}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
                 </div>
@@ -214,27 +264,46 @@ export default function Booking() {
                 <div>
                   <label htmlFor="phone"><i data-lucide="phone"></i> Phone Number</label>
                   <div className="input-with-icon">
-                    <i data-lucide="phone"></i>
-                    <input 
-                      type="tel" 
-                      id="phone" 
-                      name="phone" 
-                      placeholder="+1 (555) 000-0000" 
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      placeholder="+(Country code)(number)"
+                      value={details.phone}
+                      onChange={handleChange}
                     />
                   </div>
                 </div>
 
                 <div className="form-col-full">
+                  <label htmlFor="from"><i data-lucide="map-pin"></i> From</label>
+                  <div className="input-with-icon">
+                    <select
+                      id="from"
+                      name="from"
+                      value={details.from}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="" disabled>Select From</option>
+                      <option value="paris">Paris, France ($1,299)</option>
+                      <option value="bali">Bali, Indonesia ($949)</option>
+                      <option value="kyoto">Kyoto, Japan ($1,450)</option>
+                      <option value="newyork">New York, USA ($1,100)</option>
+                      <option value="sydney">Sydney, Australia ($1,850)</option>
+                      <option value="alps">Swiss Alps, Switzerland ($1,699)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
                   <label htmlFor="destination"><i data-lucide="map-pin"></i> Destination</label>
                   <div className="input-with-icon">
-                    <i data-lucide="map-pin"></i>
-                    <select 
-                      id="destination" 
-                      name="destination" 
-                      value={destination}
-                      onChange={(e) => setDestination(e.target.value)}
+                    <select
+                      id="destination"
+                      name="destination"
+                      value={details.destination}
+                      onChange={handleChange}
                       required
                     >
                       <option value="" disabled>Select Destination</option>
@@ -251,14 +320,13 @@ export default function Booking() {
                 <div>
                   <label htmlFor="departure"><i data-lucide="calendar"></i> Departure Date</label>
                   <div className="input-with-icon">
-                    <i data-lucide="calendar-days"></i>
-                    <input 
-                      type="date" 
-                      id="departure" 
-                      name="departure" 
-                      value={departureDate}
-                      onChange={(e) => setDepartureDate(e.target.value)}
-                      required 
+                    <input
+                      type="date"
+                      id="departure"
+                      name="departureDate"
+                      value={details.departureDate}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
                 </div>
@@ -266,14 +334,13 @@ export default function Booking() {
                 <div>
                   <label htmlFor="return"><i data-lucide="calendar"></i> Return Date</label>
                   <div className="input-with-icon">
-                    <i data-lucide="calendar-days"></i>
-                    <input 
-                      type="date" 
-                      id="return" 
-                      name="return" 
-                      value={returnDate}
-                      onChange={(e) => setReturnDate(e.target.value)}
-                      required 
+                    <input
+                      type="date"
+                      id="return"
+                      name="returnDate"
+                      value={details.returnDate}
+                      onChange={handleChange}
+                      required
                     />
                   </div>
                 </div>
@@ -281,12 +348,11 @@ export default function Booking() {
                 <div className="form-col-full">
                   <label htmlFor="guests"><i data-lucide="users"></i> Number of Guests</label>
                   <div className="input-with-icon">
-                    <i data-lucide="user-plus"></i>
-                    <select 
-                      id="guests" 
-                      name="guests" 
-                      value={guests}
-                      onChange={(e) => setGuests(e.target.value)}
+                    <select
+                      id="guests"
+                      name="guests"
+                      value={details.guests}
+                      onChange={handleChange}
                       required
                     >
                       <option value="1">1 Traveler</option>
@@ -301,7 +367,7 @@ export default function Booking() {
             </form>
           </section>
 
-          {/* <!-- Summary Panel --> */}
+          {/* */}
           <aside className="booking-summary-card">
             <h3>Trip Summary</h3>
             <ul className="summary-list">
@@ -324,7 +390,7 @@ export default function Booking() {
             </ul>
             <div className="summary-total">
               <div className="total-label">Estimated Total</div>
-              <div className="total-price" id="summaryTotal">${totalPrice.toLocaleString()}</div>
+              <div className="total-price" id="summaryTotal">&#8377;{totalPrice.toLocaleString()}</div>
             </div>
             <button type="submit" form="bookingForm" className="btn btn-book">
               Confirm & Pay <i data-lucide="credit-card"></i>
@@ -333,7 +399,7 @@ export default function Booking() {
         </div>
       </main>
 
-      {/* <!-- Footer --> */}
+      {/* */}
       <footer className="site-footer">
         <div className="container footer-grid">
           <div className="footer-col">

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Login() {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
-    
+    // const [formPassword,setPassword] = useState("");
+    const [userDetails,setuserDetails] = useState({
+      name:"",
+      email:"",
+      password:"",
+    })
     // Form fields state
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    // const [formEmail, setEmail] = useState("");
+    
     const [rememberMe, setRememberMe] = useState(false);
 
     useEffect(() => {
@@ -50,21 +56,34 @@ export default function Login() {
         }
     }, [menuOpen]);
 
-    const handleLoginSubmit = (e) => {
-        e.preventDefault();
-    const registrationData = localStorage.getItem('RegistrationData');
-        if (registrationData) {
-            const { email: registeredEmail, password: registeredPassword } = JSON.parse(registrationData);
-            if (email === registeredEmail && password === registeredPassword) {
-                alert("Login successful!");
-            } else {
-                alert("Invalid email or password.");
-            }
-        } else {
-            alert("No registered account found.");
+    const handleChange =async(e) =>{
+     setuserDetails({
+      ...userDetails,
+        [e.target.name]:e.target.value
+     })
+    }
+   const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+        const response = await axios.post("http://localhost:5000/api/user/login", {
+            email: userDetails.email,
+            password: userDetails.password
+        });  
+        if (response.data) {   
+            localStorage.setItem("RegistrationData", JSON.stringify(response.data.data));
+            alert("Login successful!");
         }
-    };
-
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || "Something went wrong during login.";
+        alert(errorMessage);
+        setuserDetails({
+            name: "",
+            email: "",
+            password: "",
+        });
+    }
+};
     return (
       <div>
         <title>Login — TripAgent</title>
@@ -126,9 +145,10 @@ export default function Login() {
                     <input 
                       id="login-email"
                       type="email" 
+                      name="email"
                       placeholder="alex@example.com" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={userDetails.email}
+                      onChange={handleChange}
                       required 
                       style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1rem', background: '#fff', color: '#000' }}
                     />
@@ -142,10 +162,11 @@ export default function Login() {
                     <i data-lucide="lock" style={{ position: 'absolute', left: '12px', width: '18px', height: '18px', color: '#999' }}></i>
                     <input 
                       id="login-password"
-                      type="password" 
+                      type="password"
+                      name="password" 
                       placeholder="••••••••" 
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={userDetails.password}
+                      onChange={handleChange}
                       required 
                       style={{ width: '100%', padding: '12px 12px 12px 40px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '1rem', background: '#fff', color: '#000' }}
                     />

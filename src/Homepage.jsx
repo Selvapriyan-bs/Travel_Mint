@@ -214,7 +214,7 @@ export default function Homepage() {
                 <h3>Paris, France</h3>
                 <p>Experience the romantic city of lights, world-class art at the Louvre, café culture, and the iconic Eiffel Tower views.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,299 <span>/ person</span></div>
+                  <div className="card-price">&#8377;10,299<span>/ person</span></div>
                   <Link to="/booking?destination=paris" className="btn btn-outline btn-sm">Book Trip</Link>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function Homepage() {
                 <h3>Bali, Indonesia</h3>
                 <p>Indulge in spiritual temples, lush emerald rice terraces, pristine beaches, and luxurious oceanfront resorts.</p>
                 <div className="card-footer">
-                  <div className="card-price">$949 <span>/ person</span></div>
+                  <div className="card-price">&#8377;9,490 <span>/ person</span></div>
                   <Link to="/booking?destination=bali" className="btn btn-outline btn-sm">Book Trip</Link>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export default function Homepage() {
                 <h3>Kyoto, Japan</h3>
                 <p>Step back in time through historic wooden temples, quiet bamboo groves, colorful shrines, and traditional tea ceremonies.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,450 <span>/ person</span></div>
+                  <div className="card-price">&#8377;14,500 <span>/ person</span></div>
                   <Link to="/booking?destination=kyoto" className="btn btn-outline btn-sm">Book Trip</Link>
                 </div>
               </div>

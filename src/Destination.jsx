@@ -10,14 +10,11 @@ export default function Destination() {
       const [email, setEmail] = useState("");
       const [password, setPassword] = useState("");
       const [rememberMe, setRememberMe] = useState(false);
-    
-      // Safely parse local storage registration data and establish the active logged-in user state
       const [user, setUser] = useState(() => {
         try {
           const registrationData = localStorage.getItem('RegistrationData');
           if (registrationData) {
             const parsedData = JSON.parse(registrationData);
-            // Fallback to extraction from email if name wasn't explicitly saved
             return {
               name: parsedData.name || parsedData.email.split('@')[0],
               email: parsedData.email
@@ -158,7 +155,7 @@ export default function Destination() {
                 <h3>Paris, France</h3>
                 <p>Wander down the Seine, visit world-renowned galleries, enjoy fresh croissants at corner bistros, and admire the majestic architecture.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,299 <span>/ person</span></div>
+                  <div className="card-price">&#8377;40,500 <span>/ person</span></div>
                   <Link to="/booking?destination=paris" className="btn btn-outline btn-sm">Book Now</Link>
                 </div>
               </div>
@@ -179,7 +176,7 @@ export default function Destination() {
                 <h3>Bali, Indonesia</h3>
                 <p>Unwind in private villas nestled in rainforest canopy, surf warm breaks, explore ancient volcanic shrines, and restore body and mind.</p>
                 <div className="card-footer">
-                  <div className="card-price">$949 <span>/ person</span></div>
+                  <div className="card-price">&#8377;30,654 <span>/ person</span></div>
                   <Link to="/booking?destination=bali" className="btn btn-outline btn-sm">Book Now</Link>
                 </div>
               </div>
@@ -200,7 +197,7 @@ export default function Destination() {
                 <h3>Kyoto, Japan</h3>
                 <p>Immerse yourself in Zen rock gardens, golden pavilions, vermilion torii gates, and unforgettable traditional culinary experiences.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,450 <span>/ person</span></div>
+                  <div className="card-price">&#8377;30,450 <span>/ person</span></div>
                   <Link to="/booking?destination=kyoto" className="btn btn-outline btn-sm">Book Now</Link>
                 </div>
               </div>
@@ -221,7 +218,7 @@ export default function Destination() {
                 <h3>New York City, USA</h3>
                 <p>Catch a Broadway play, walk across the Brooklyn Bridge, shop along Fifth Avenue, and take in the panoramic skyline from top decks.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,100 <span>/ person</span></div>
+                  <div className="card-price">&#8377;64,100 <span>/ person</span></div>
                   <Link to="/booking?destination=newyork" className="btn btn-outline btn-sm">Book Now</Link>
                 </div>
               </div>
@@ -242,7 +239,7 @@ export default function Destination() {
                 <h3>Sydney, Australia</h3>
                 <p>Sail past the Opera House, sunbathe on Bondi Beach, explore the historic Rocks district, and escape into the Blue Mountains.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,850 <span>/ person</span></div>
+                  <div className="card-price">&#8377;45,850 <span>/ person</span></div>
                   <Link to="/booking?destination=sydney" className="btn btn-outline btn-sm">Book Now</Link>
                 </div>
               </div>
@@ -263,7 +260,7 @@ export default function Destination() {
                 <h3>Swiss Alps, Switzerland</h3>
                 <p>Breathe the crisp mountain air, ski down world-class runs, relax in thermal baths, and ride scenic glass-domed cog railways.</p>
                 <div className="card-footer">
-                  <div className="card-price">$1,699 <span>/ person</span></div>
+                  <div className="card-price">&#8377;32,699 <span>/ person</span></div>
                   <Link to="/booking?destination=alps" className="btn btn-outline btn-sm">Book Now</Link>
                 </div>
               </div>
