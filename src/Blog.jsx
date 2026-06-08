@@ -57,7 +57,7 @@ const initialBlogPosts = [
 export default function Blog() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+    const [role,setRole]=useState("");
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
@@ -70,7 +70,8 @@ export default function Blog() {
         const parsedData = JSON.parse(registrationData);
         return {
           name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
-          email: parsedData.email || ""
+          email: parsedData.email || "",
+            role:parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -153,7 +154,11 @@ export default function Blog() {
             <li><Link to="/blog" className="active">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
-            
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
@@ -165,7 +170,7 @@ export default function Blog() {
           </ul>
 
           <div className="nav-cta">
-            {user && (
+            {user && user.role==="user" && (
               <Link to="/dashboard" className="btn btn-outline btn-sm" style={{ marginRight: '10px' }}>
                 <i data-lucide="layout-dashboard"></i> My Dashboard
               </Link>

@@ -1,91 +1,190 @@
-import React, { useState, useEffect } from 'react';
-import {Link} from 'react-router-dom';
-// Note: If you're using lucide-react package, it's better to import icons directly:
-// import { Compass, LayoutDashboard, CalendarCheck, MapPin, Settings, ExternalLink, ... } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom'; // IMPORT PORTAL MECHANISM
+import { Link } from 'react-router-dom';
+import "./Assets/Css/Admin.css"
+import axios from 'axios';
+import {
+  Compass,
+  LayoutDashboard,
+  CalendarCheck,
+  MapPin,
+  Settings,
+  ExternalLink,
+  ChevronsUpDown,
+  Menu,
+  Bell,
+  RefreshCw,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Clock,
+  ArrowRight,
+  X
+} from 'lucide-react';
+
+const fallbackAdminDestinations = [
+  { id: 1, name: "Paris", country: "France", badge: "Featured", price: 1299, description: "Experience the romance of the City of Light.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34" }
+];
 
 export default function Admin() {
-  // 1. Manage Active View Panel State ("dashboard", "bookings", "destinations", "settings")
   const [activeView, setActiveView] = useState('dashboard');
-  
-  // 2. Manage Sidebar Toggle State (Mobile responsiveness)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // 3. Manage Form / Modal States
+  // Modal State Section with Debugging Effects
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [bookingFilter, setBookingFilter] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
 
-  // 4. Sample Mock Data (Replace with your actual API fetch requests)
-  const [bookings, setBookings] = useState([
-    { id: "BK-1042", customer: "Alice Johnson", email: "alice@example.com", destination: "Paris, France", dates: "Oct 12 - Oct 18", pax: 2, total: "$2,598", status: "approved", date: "2026-05-28" },
-    { id: "BK-1041", customer: "John Doe", email: "john@example.com", destination: "Tokyo, Japan", dates: "Nov 05 - Nov 12", pax: 1, total: "$1,850", status: "pending", date: "2026-05-30" },
-    { id: "BK-1040", customer: "Sarah Smith", email: "sarah@example.com", destination: "Bali, Indonesia", dates: "Dec 01 - Dec 10", pax: 4, total: "$3,200", status: "completed", date: "2026-05-25" },
-  ]);
-
-  const [destinations, setDestinations] = useState([
-    { id: 1, name: "Paris", country: "France", badge: "Featured", price: 1299, days: 6, rating: 4.8, reviews: 500, image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34", desc: "Experience the romance of the City of Light." }
-  ]);
-
-  // 5. Initialize Lucide Icons on Mount/View Changes
   useEffect(() => {
-    // If you are using the global window script bundle from your original code:
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-  }, [activeView, isModalOpen]); // Re-run when view switches or modal opens to bind icons
+    console.log("Modal State:", isModalOpen);
+  }, [isModalOpen]);
 
-  // Helper calculation for pending badge
+  const openFormModal = () => {
+    console.log("Add Destination clicked");
+    setActiveView("destinations");
+    setIsModalOpen(true);
+  };
+
+  // Dynamic States for API Data
+  const [destinations, setDestinations] = useState([]);
+  const [destLoading, setDestLoading] = useState(true);
+
+  // Form Input States
+  const [formData, setFormData] = useState({
+    title: '',
+    destination: '',
+    region: '',
+    country: '',
+    price: '',
+    days: '',
+    rating: '5',
+    reviews: '0 reviews',
+    badge: 'New',
+    description: '',
+    image: ''
+  });
+  const [formSubmitting, setFormSubmitting] = useState(false);
+
+  const [bookings] = useState([
+    { id: "BK-1042", customer: "Alice Johnson", email: "alice@example.com", destination: "Paris, France", dates: "Oct 12 - Oct 18", pax: 2, total: "67,598", status: "approved", date: "2026-05-28" },
+    { id: "BK-1041", customer: "John Doe", email: "john@example.com", destination: "Tokyo, Japan", dates: "Nov 05 - Nov 12", pax: 1, total: "54,850", status: "pending", date: "2026-05-30" },
+    { id: "BK-1040", customer: "Sarah Smith", email: "sarah@example.com", destination: "Bali, Indonesia", dates: "Dec 01 - Dec 10", pax: 4, total: "56,200", status: "completed", date: "2026-05-25" },
+  ]);
+
+  const fetchDestinations = async () => {
+    setDestLoading(true);
+    try {
+      const response = await axios.get("https://trip-agent-backend.onrender.com/api/package");
+      if (response && response.data) {
+        let incomingData = response.data;
+
+        if (!Array.isArray(incomingData) && typeof incomingData === 'object') {
+          incomingData = incomingData.package || incomingData.packages || incomingData.data || [];
+        }
+
+        if (incomingData.length > 0) {
+          const structuredData = incomingData.map(p => ({
+            id: p._id || p.id,
+            name: p.title || p.destination || "Unknown Destination",
+            country: p.country || p.region || "Global",
+            badge: p.badge || "New",
+            price: p.price || 0,
+            desc: p.description || "No description provided.",
+            image: p.image || "https://images.unsplash.com/photo-1502602898657-3e91760cbb34"
+          }));
+          setDestinations(structuredData);
+        } else {
+          setDestinations(fallbackAdminDestinations);
+        }
+      }
+    } catch (err) {
+      console.error("Admin portal API error fetching packages:", err);
+      setDestinations(fallbackAdminDestinations);
+    } finally {
+      setDestLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDestinations();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleAddDestinationSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.price) {
+      alert("Title and Price are required fields.");
+      return;
+    }
+
+    setFormSubmitting(true);
+    try {
+      const response = await axios.post("https://trip-agent-backend.onrender.com/api/package/post", {
+        title: formData.title,
+        destination: formData.destination || formData.title,
+        region: formData.region,
+        country: formData.country,
+        price: Number(formData.price),
+        days: Number(formData.days) || 1,
+        rating: Number(formData.rating) || 5,
+        reviews: formData.reviews || "0 reviews",
+        badge: formData.badge,
+        description: formData.description,
+        image: formData.image
+      });
+
+      if (response.status === 201 || response.data) {
+        alert("Destination Package added successfully!");
+        setIsModalOpen(false);
+        setFormData({
+          title: '', destination: '', region: '', country: '',
+          price: '', days: '', rating: '5', reviews: '0 reviews',
+          badge: 'New', description: '', image: ''
+        });
+        fetchDestinations();
+      }
+    } catch (error) {
+      console.error("Error creating new destination item:", error);
+      alert(error.response?.data?.message || "Submission failed.");
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   return (
     <div className={`admin-shell ${isSidebarOpen ? 'sidebar-open' : ''}`}>
 
-      {/* ═══════════════════════════════════════
-           Sidebar
-      ════════════════════════════════════════ */}
+      {/* Sidebar */}
       <aside className="admin-sidebar" id="adminSidebar">
         <div className="sidebar-brand">
-          <div className="brand-logo"><i data-lucide="compass"></i></div>
+          <div className="brand-logo"><Compass size={20} /></div>
           <span className="brand-text">Trip<span>Agent</span></span>
           <span className="sidebar-badge">Admin</span>
         </div>
 
         <nav className="sidebar-nav">
           <p className="nav-section-title">Main</p>
-
-          <div 
-            className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} 
-            onClick={() => setActiveView('dashboard')}
-          >
-            <i data-lucide="layout-dashboard"></i> Dashboard
+          <div className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
+            <LayoutDashboard size={18} /> Dashboard
           </div>
-
-          <div 
-            className={`nav-item ${activeView === 'bookings' ? 'active' : ''}`} 
-            onClick={() => setActiveView('bookings')}
-          >
-            <i data-lucide="calendar-check"></i> Bookings
+          <div className={`nav-item ${activeView === 'bookings' ? 'active' : ''}`} onClick={() => setActiveView('bookings')}>
+            <CalendarCheck size={18} /> Bookings
             {pendingCount > 0 && <span className="nav-badge">{pendingCount}</span>}
           </div>
-
-          <div 
-            className={`nav-item ${activeView === 'destinations' ? 'active' : ''}`} 
-            onClick={() => setActiveView('destinations')}
-          >
-            <i data-lucide="map-pin"></i> Destinations
+          <div className={`nav-item ${activeView === 'destinations' ? 'active' : ''}`} onClick={() => { setActiveView('destinations'); fetchDestinations(); }}>
+            <MapPin size={18} /> Destinations
           </div>
-
           <p className="nav-section-title">System</p>
-
-          <div 
-            className={`nav-item ${activeView === 'settings' ? 'active' : ''}`} 
-            onClick={() => setActiveView('settings')}
-          >
-            <i data-lucide="settings"></i> Settings
-          </div>
-
           <Link to="/" className="nav-item" target="_blank" rel="noreferrer">
-            <i data-lucide="external-link"></i> View Website
+            <ExternalLink size={18} /> View Website
           </Link>
         </nav>
 
@@ -96,144 +195,92 @@ export default function Admin() {
               <div className="user-name">Admin User</div>
               <div className="user-role">Super Administrator</div>
             </div>
-            <i data-lucide="chevrons-up-down" className="user-chevron"></i>
           </div>
         </div>
       </aside>
 
-      {/* ═══════════════════════════════════════
-           Main Panel Header & Content Wrap
-      ════════════════════════════════════════ */}
+      {/* Main Content Area */}
       <main className="admin-main">
         <header className="admin-topbar">
           <div className="topbar-left">
             <button className="sidebar-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-              <i data-lucide="menu"></i>
+              <Menu size={20} />
             </button>
             <div>
               <div className="page-title" style={{ textTransform: 'capitalize' }}>{activeView}</div>
               <div className="page-subtitle">Overview of TripAgent {activeView}</div>
             </div>
           </div>
+
           <div className="topbar-right">
             <button className="topbar-btn" title="Notifications">
-              <i data-lucide="bell"></i>
+              <Bell size={18} />
               <span className="notif-dot"></span>
             </button>
-            <button className="topbar-btn" title="Refresh" onClick={() => window.location.reload()}>
-              <i data-lucide="refresh-cw"></i>
+            <button className="topbar-btn" title="Refresh" onClick={() => fetchDestinations()}>
+              <RefreshCw size={18} />
             </button>
-            {activeView === 'destinations' && (
-              <button className="topbar-btn-primary" onClick={() => setIsModalOpen(true)}>
-                <i data-lucide="plus"></i> Add Destination
-              </button>
-            )}
+
+            <button
+              type="button"
+              className="topbar-btn-primary"
+              onClick={(e) => {
+                e.preventDefault();
+                openFormModal();
+              }}
+            >
+              <Plus size={18} />
+              Add Destination
+            </button>
           </div>
         </header>
 
         <div className="admin-content">
-          
-          {/* ══════════════════════════════════
-               DASHBOARD VIEW
-          ═══════════════════════════════════ */}
           {activeView === 'dashboard' && (
             <div className="view-panel active">
-              {/* Stats Row */}
               <div className="stats-grid">
                 <div className="stat-card blue">
                   <div className="stat-card-header">
-                    <div className="stat-icon blue"><i data-lucide="calendar-check"></i></div>
-                    <div className="stat-trend up"><i data-lucide="trending-up"></i> +12%</div>
+                    <div className="stat-icon blue"><CalendarCheck size={20} /></div>
+                    <div className="stat-trend up"><TrendingUp size={14} /> +12%</div>
                   </div>
                   <div className="stat-value">{bookings.length}</div>
                   <div className="stat-label">Total Bookings</div>
                 </div>
                 <div className="stat-card green">
                   <div className="stat-card-header">
-                    <div className="stat-icon green"><i data-lucide="dollar-sign"></i></div>
-                    <div className="stat-trend up"><i data-lucide="trending-up"></i> +8.4%</div>
+                    <div className="stat-icon green"><DollarSign size={20} /></div>
+                    <div className="stat-trend up"><TrendingUp size={14} /> +8.4%</div>
                   </div>
-                  <div className="stat-value">$7,648</div>
+                  <div className="stat-value">&#8377;7,648</div>
                   <div className="stat-label">Est. Revenue</div>
                 </div>
                 <div className="stat-card orange">
                   <div className="stat-card-header">
-                    <div className="stat-icon orange"><i data-lucide="map-pin"></i></div>
-                    <div className="stat-trend up"><i data-lucide="trending-up"></i> +2</div>
+                    <div className="stat-icon orange"><MapPin size={20} /></div>
+                    <div className="stat-trend up"><TrendingUp size={14} /> Live</div>
                   </div>
-                  <div className="stat-value">{destinations.length}</div>
+                  <div className="stat-value">{destLoading ? "..." : destinations.length}</div>
                   <div className="stat-label">Active Destinations</div>
                 </div>
                 <div className="stat-card purple">
                   <div className="stat-card-header">
-                    <div className="stat-icon purple"><i data-lucide="clock"></i></div>
-                    <div className="stat-trend down"><i data-lucide="trending-down"></i> -3</div>
+                    <div className="stat-icon purple"><Clock size={20} /></div>
+                    <div className="stat-trend down"><TrendingDown size={14} /> -3</div>
                   </div>
                   <div className="stat-value">{pendingCount}</div>
                   <div className="stat-label">Pending Requests</div>
                 </div>
               </div>
 
-              {/* Charts Row */}
-              <div className="dashboard-row">
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Monthly Booking Trends</h3>
-                    <div className="card-header-meta">Bookings per month (last 6 months)</div>
-                  </div>
-                  <div className="card-body">
-                    <div className="bar-chart">
-                      {/* You would cleanly hook up a React Chart charting library component here like <Bar data={...} /> */}
-                      <p style={{ color: 'var(--text-secondary)' }}>[Chart Placeholder]</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="card">
-                  <div className="card-header">
-                    <h3>Booking Status</h3>
-                    <div className="card-header-meta">Distribution by status</div>
-                  </div>
-                  <div className="card-body">
-                    <div className="donut-wrapper">
-                      <div className="donut-svg-container">
-                        <svg width="120" height="120" viewBox="0 0 120 120"></svg>
-                        <div className="donut-center-text">
-                          <div className="donut-num">{bookings.length}</div>
-                          <div className="donut-sub">Total</div>
-                        </div>
-                      </div>
-                      <div className="donut-legend">
-                        <div className="donut-legend-item">
-                          <div className="donut-legend-dot" style={{ background: '#22c55e' }}></div>
-                          <span className="donut-legend-label">Completed</span>
-                          <span className="donut-legend-value">{bookings.filter(b => b.status === 'completed').length}</span>
-                        </div>
-                        <div className="donut-legend-item">
-                          <div className="donut-legend-dot" style={{ background: '#0ea5e9' }}></div>
-                          <span className="donut-legend-label">Approved</span>
-                          <span className="donut-legend-value">{bookings.filter(b => b.status === 'approved').length}</span>
-                        </div>
-                        <div className="donut-legend-item">
-                          <div className="donut-legend-dot" style={{ background: '#f59e0b' }}></div>
-                          <span className="donut-legend-label">Pending</span>
-                          <span className="donut-legend-value">{pendingCount}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Bookings Table Loop */}
-              <div className="recent-card">
+              <div className="recent-card" style={{ marginTop: '24px' }}>
                 <div className="card-header">
                   <div>
                     <h3>Recent Bookings</h3>
                     <div className="card-header-meta">Latest customer booking requests</div>
                   </div>
                   <button className="topbar-btn-primary" style={{ fontSize: '0.83rem', padding: '8px 14px' }} onClick={() => setActiveView('bookings')}>
-                    View All <i data-lucide="arrow-right"></i>
+                    View All <ArrowRight size={16} />
                   </button>
                 </div>
                 <div className="table-container">
@@ -254,7 +301,7 @@ export default function Admin() {
                           <td>{item.customer}</td>
                           <td>{item.destination}</td>
                           <td>{item.pax}</td>
-                          <td>{item.total}</td>
+                          <td>&#8377;{item.total}</td>
                           <td><span className={`badge status-${item.status}`}>{item.status}</span></td>
                           <td>{item.date}</td>
                         </tr>
@@ -266,78 +313,92 @@ export default function Admin() {
             </div>
           )}
 
-          {/* ══════════════════════════════════
-               BOOKINGS VIEW
-          ═══════════════════════════════════ */}
           {activeView === 'bookings' && (
             <div className="view-panel active">
               <div className="section-head">
-                <h2>All Bookings</h2>
-                <p>Manage and update all customer booking requests</p>
+                <div>
+                  <h2>Booking Requests</h2>
+                  <p>Review and manage incoming customer tour reservations</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span className="badge status-pending" style={{ padding: '6px 12px', borderRadius: '20px' }}>
+                    {pendingCount} Awaiting Review
+                  </span>
+                </div>
               </div>
 
-              <div className="filters-bar">
-                <div className="search-input-wrapper">
-                  <i data-lucide="search"></i>
-                  <input 
-                    type="text" 
-                    className="search-input" 
-                    placeholder="Search by name, email, destination…" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+              {/* Filter Controls Bar */}
+              <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', gap: '16px' }}>
+                <div className="search-input-wrapper" style={{ flex: 1, maxWidth: '400px' }}>
+                  <input
+                    type="text"
+                    placeholder="Search customer or destination..."
+                    className="search-input"
+                    style={{ width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
-                <select 
-                  className="filter-select" 
-                  value={bookingFilter}
-                  onChange={(e) => setBookingFilter(e.target.value)}
-                >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
+                <select className="filter-select" style={{ minWidth: '160px' }}>
+                  <option value="all">All Bookings</option>
+                  <option value="pending">Awaiting Action</option>
                   <option value="approved">Approved</option>
                   <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
                 </select>
               </div>
 
-              <div className="bookings-table-wrap">
+              {/* Bookings Table Context Layout */}
+              <div className="recent-card">
                 <div className="table-container">
                   <table>
                     <thead>
                       <tr>
                         <th>ID</th>
                         <th>Customer</th>
-                        <th>Destination & Dates</th>
-                        <th>Pax</th>
-                        <th>Total</th>
+                        <th>Tour Package</th>
+                        <th>Travel Dates</th>
+                        <th>Guests</th>
+                        <th>Total Cost</th>
                         <th>Status</th>
-                        <th>Booked On</th>
-                        <th>Actions</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {bookings
-                        .filter(b => bookingFilter === 'all' || b.status === bookingFilter)
-                        .filter(b => b.customer.toLowerCase().includes(searchQuery.toLowerCase()) || b.destination.toLowerCase().includes(searchQuery.toLowerCase()))
-                        .map((item) => (
-                          <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>
-                              <div><strong>{item.customer}</strong></div>
-                              <small style={{ color: 'var(--text-secondary)' }}>{item.email}</small>
-                            </td>
-                            <td>
-                              <div>{item.destination}</div>
-                              <small style={{ color: 'var(--text-secondary)' }}>{item.dates}</small>
-                            </td>
-                            <td>{item.pax}</td>
-                            <td>{item.total}</td>
-                            <td><span className={`badge status-${item.status}`}>{item.status}</span></td>
-                            <td>{item.date}</td>
-                            <td>
-                              <button className="topbar-btn" title="Approve"><i data-lucide="check"></i></button>
-                            </td>
-                          </tr>
+                      {bookings.map((item) => (
+                        <tr key={item.id} style={{ background: item.status === 'pending' ? 'rgba(245, 158, 11, 0.03)' : 'transparent' }}>
+                          <td style={{ fontWeight: '600', color: 'var(--accent-color)' }}>{item.id}</td>
+                          <td>
+                            <div style={{ fontWeight: '500' }}>{item.customer}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.email}</div>
+                          </td>
+                          <td>{item.destination}</td>
+                          <td>{item.dates}</td>
+                          <td>{item.pax} {item.pax === 1 ? 'Pax' : 'People'}</td>
+                          <td style={{ fontWeight: '600' }}>&#8377;{item.total}</td>
+                          <td>
+                            <span className={`badge status-${item.status}`}>
+                              {item.status === 'pending' ? '⏳ pending' : item.status}
+                            </span>
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            {item.status === 'pending' ? (
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                                <button
+                                  onClick={() => alert(`Approving ${item.id}`)}
+                                  style={{ padding: '6px 12px', background: 'var(--color-completed)', border: 'none', color: '#000', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => alert(`Rejecting ${item.id}`)}
+                                  style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--color-cancelled)', color: 'var(--color-cancelled)', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>No actions required</span>
+                            )}
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
@@ -346,116 +407,190 @@ export default function Admin() {
             </div>
           )}
 
-          {/* ══════════════════════════════════
-               DESTINATIONS VIEW
-          ═══════════════════════════════════ */}
           {activeView === 'destinations' && (
             <div className="view-panel active">
               <div className="section-head">
                 <div>
-                  <h2>Destinations</h2>
-                  <p>Add, edit, or remove travel packages from the catalog</p>
+                  <h2>Destinations Catalog</h2>
+                  <p>Synchronized directly with the live trip package database</p>
                 </div>
-                <button className="btn-add" onClick={() => setIsModalOpen(true)}>
-                  <i data-lucide="plus"></i> Add Destination
+
+                <button
+                  type="button"
+                  className="btn-add"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openFormModal();
+                  }}
+                >
+                  <Plus size={18} />
+                  Add Destination
                 </button>
               </div>
 
-              <div className="dest-grid">
-                {destinations.map((dest) => (
-                  <div className="dest-card" key={dest.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                    <img src={dest.image} alt={dest.name} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
-                    <div style={{ padding: '16px' }}>
-                      <h3>{dest.name}, {dest.country}</h3>
-                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{dest.desc}</p>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', alignItems: 'center' }}>
-                        <span><strong>${dest.price}</strong> / pax</span>
-                        <span className="badge">{dest.badge}</span>
+              {destLoading ? (
+                <div style={{ padding: '60px 0', textAlign: 'center', color: '#888' }}>
+                  <p style={{ fontSize: '0.9rem' }}>Updating destinations map grid...</p>
+                </div>
+              ) : (
+                <div className="dest-grid">
+                  {destinations.map((dest) => (
+                    <div className="dest-card" key={dest.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
+                      <img src={dest.image} alt={dest.name} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
+                      <div style={{ padding: '16px' }}>
+                        <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem' }}>{dest.name}</h3>
+                        <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '8px' }}>{dest.country}</p>
+                        <p style={{ fontSize: '0.85rem', color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '38px' }}>{dest.desc}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', alignItems: 'center' }}>
+                          <span><strong>&#8377;{Number(dest.price).toLocaleString()}</strong></span>
+                          {dest.badge && <span className="badge" style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>{dest.badge}</span>}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
-          {/* ══════════════════════════════════
-               SETTINGS VIEW
-          ═══════════════════════════════════ */}
           {activeView === 'settings' && (
             <div className="view-panel active">
-              <div className="section-head">
-                <h2>Settings</h2>
-                <p>Manage admin account and system preferences</p>
-              </div>
-              <div className="settings-grid">
-                <div className="settings-card">
-                  <h3>Admin Profile</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div className="form-group">
-                      <label className="form-label">Full Name</label>
-                      <input type="text" className="form-input" defaultValue="Admin User" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Email Address</label>
-                      <input type="email" className="form-input" defaultValue="admin@tripagent.com" />
-                    </div>
-                    <button className="modal-btn-save" style={{ alignSelf: 'flex-start' }}>Save Changes</button>
-                  </div>
-                </div>
-              </div>
+              {/* Settings context */}
             </div>
           )}
-
         </div>
       </main>
 
-      {/* ══════════════════════════════════
-           MODAL WINDOW (CONDITIONAL RENDERING)
-      ═══════════════════════════════════ */}
-      {isModalOpen && (
-        <div className="modal-overlay" style={{ display: 'flex' }}>
-          <div className="modal">
-            <div className="modal-header">
-              <h2>Add New Destination</h2>
-              <button className="modal-close" onClick={() => setIsModalOpen(false)}><i data-lucide="x"></i></button>
+      {/* REACT PORTAL: Escapes CSS layout boxes and mounts form layout safely straight to document.body */}
+      {isModalOpen && createPortal(
+        <div
+          className="modal-portal-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 2147483647 // Maximum absolute z-index value allowed by browsers
+          }}
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="modal-window"
+            style={{
+              background: '#1e1e24',
+              padding: '28px',
+              borderRadius: '12px',
+              width: '90%',
+              maxWidth: '555px',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              border: '1px solid #444',
+              color: '#fff',
+              boxShadow: '0px 24px 50px rgba(0, 0, 0, 0.7)',
+              position: 'relative',
+              boxSizing: 'border-box'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '12px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '600', color: '#fff' }}>Create Travel Package</h2>
+              <button
+                type="button"
+                style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '4px' }}
+                onClick={() => setIsModalOpen(false)}
+              >
+                <X size={20} />
+              </button>
             </div>
-            <div className="modal-body">
-              <form id="destForm" onSubmit={(e) => e.preventDefault()}>
-                <div className="form-grid-2">
-                  <div className="form-group full">
-                    <label className="form-label" htmlFor="fieldName">Destination Name *</label>
-                    <input type="text" className="form-input" id="fieldName" placeholder="e.g. Paris, France" required />
+
+            <form onSubmit={handleAddDestinationSubmit}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Package Title *</label>
+                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} required placeholder="Luxury Escape to Paris" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Destination City</label>
+                    <input type="text" name="destination" value={formData.destination} onChange={handleInputChange} placeholder="Paris" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
                   </div>
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="fieldCountry">Country *</label>
-                    <input type="text" className="form-input" id="fieldCountry" placeholder="e.g. France" required />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="fieldBadge">Badge Label</label>
-                    <select className="form-select" id="fieldBadge" defaultValue="Featured">
-                      <option value="Featured">Featured</option>
-                      <option value="Best Seller">Best Seller</option>
-                      <option value="Recommended">Recommended</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="fieldPrice">Price *</label>
-                    <input type="number" className="form-input" id="fieldPrice" placeholder="e.g. 1299" required />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Country</label>
+                    <input type="text" name="country" value={formData.country} onChange={handleInputChange} placeholder="France" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
                   </div>
                 </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button className="modal-btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-              <button className="modal-btn-save" onClick={() => setIsModalOpen(false)}>Save Destination</button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Toast Notifications Container */}
-      <div className="toast-container" id="toastContainer"></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Region / Continent</label>
+                    <input type="text" name="region" value={formData.region} onChange={handleInputChange} placeholder="Europe" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Duration (Days)</label>
+                    <input type="number" name="days" value={formData.days} onChange={handleInputChange} placeholder="6" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Price (INR) *</label>
+                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} required placeholder="24999" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Display Badge</label>
+                    <select name="badge" value={formData.badge} onChange={handleInputChange} style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }}>
+                      <option value="New">New</option>
+                      <option value="Featured">Featured</option>
+                      <option value="Best Seller">Best Seller</option>
+                      <option value="Limited Offer">Limited Offer</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Rating (1 - 5)</label>
+                    <input type="number" name="rating" min="1" max="5" step="0.1" value={formData.rating} onChange={handleInputChange} placeholder="4.8" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Reviews Count</label>
+                    <input type="text" name="reviews" value={formData.reviews} onChange={handleInputChange} placeholder="120 reviews" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Image URL</label>
+                  <input type="url" name="image" value={formData.image} onChange={handleInputChange} placeholder="https://images.unsplash.com/..." style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Description</label>
+                  <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" placeholder="Provide package itinerary highlights..." style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', resize: 'vertical', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' }}></textarea>
+                </div>
+
+              </div>
+
+              <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '16px', borderTop: '1px solid #333' }}>
+                <button type="button" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #555', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }} onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" disabled={formSubmitting} style={{ padding: '10px 20px', background: '#e11d48', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', opacity: formSubmitting ? 0.6 : 1 }}>
+                  {formSubmitting ? "Saving..." : "Save Destination"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body // Mounts overlay layout cleanly right onto root DOM body level!
+      )}
     </div>
   );
 }

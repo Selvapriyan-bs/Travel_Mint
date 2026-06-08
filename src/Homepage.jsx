@@ -4,12 +4,12 @@ import { Link } from 'react-router-dom';
 export default function Homepage() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
   // Login input states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-
+  const [role,setRole]=useState("");
   // Safely parse local storage registration data and establish the active logged-in user state
   const [user, setUser] = useState(() => {
     try {
@@ -19,7 +19,8 @@ export default function Homepage() {
         // Fallback to extraction from email if name wasn't explicitly saved
         return {
           name: parsedData.name || parsedData.email.split('@')[0],
-          email: parsedData.email
+          email: parsedData.email, 
+          role:parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -71,7 +72,7 @@ export default function Homepage() {
 
   const handleLogout = () => {
     setUser(null);
-     localStorage.removeItem('RegistrationData');
+    localStorage.removeItem('RegistrationData');
     // sessionStorage.removeItem('RegistrationData');
   };
 
@@ -87,7 +88,7 @@ export default function Homepage() {
           <Link to="/" className="logo">
             <i data-lucide="compass"></i> Trip<span>Agent</span>
           </Link>
-          
+
           <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
             <li><Link to="/" className="active">Home</Link></li>
             <li><Link to="/destination">Destinations</Link></li>
@@ -96,6 +97,11 @@ export default function Homepage() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
             {/* Conditional Authentication Menu Items */}
             {user ? (
               <li className="mobile-only-user">
@@ -110,20 +116,20 @@ export default function Homepage() {
           <div className="nav-cta">
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
           </div>
-                   
-            {/* Desktop Logged-in Banner using Starting Letter Profile Icon */}
-            {user && (
-              <div className="user-profile-banner">
-                <div className="user-text-avatar">
-                  {initialLetter}
-                </div>
-                <div className="user-info-dropdown">
-                  <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-                  <span className="user-email-sub">{user.email}</span>
-                  <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-                </div>
+
+          {/* Desktop Logged-in Banner using Starting Letter Profile Icon */}
+          {user && (
+            <div className="user-profile-banner">
+              <div className="user-text-avatar">
+                {initialLetter}
               </div>
-            )}
+              <div className="user-info-dropdown">
+                <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
+                <span className="user-email-sub">{user.email}</span>
+                <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
+              </div>
+            </div>
+          )}
           <div
             className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"

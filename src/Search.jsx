@@ -98,7 +98,7 @@ export default function Search() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-
+  const [role,setRole]=useState("");
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -136,7 +136,8 @@ export default function Search() {
         // Fallback to extraction from email if name wasn't explicitly saved
         return {
           name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
-          email: parsedData.email || ""
+          email: parsedData.email || "",
+            role:parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -329,6 +330,11 @@ export default function Search() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>

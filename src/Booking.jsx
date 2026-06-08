@@ -16,7 +16,7 @@ export default function Booking() {
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [role,setRole]=useState("");
   // Centralized Form State
   const [details, setDetails] = useState({
     firstName: "",
@@ -37,7 +37,8 @@ export default function Booking() {
         const parsedData = JSON.parse(registrationData);
         return {
           name: parsedData.name || parsedData.email.split('@')[0],
-          email: parsedData.email
+          email: parsedData.email,
+            role:parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -163,6 +164,11 @@ export default function Booking() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>

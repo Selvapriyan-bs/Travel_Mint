@@ -3,18 +3,27 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // const [formPassword,setPassword] = useState("");
+  
   const [userDetails, setuserDetails] = useState({
     name: "",
     email: "",
     password: "",
-  })
-  // Form fields state
-  // const [formEmail, setEmail] = useState("");
+  });
 
   const [rememberMe, setRememberMe] = useState(false);
+
+  // Parse local storage on component mount to retrieve authenticated session profiles
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("RegistrationData");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,7 +36,6 @@ export default function Login() {
 
     window.addEventListener('scroll', handleScroll);
 
-    // Dynamically load Lucide CDN script to initialize icons
     const loadLucide = () => {
       if (window.lucide) {
         window.lucide.createIcons();
@@ -54,14 +62,15 @@ export default function Login() {
     if (window.lucide) {
       window.lucide.createIcons();
     }
-  }, [menuOpen]);
+  }, [menuOpen, currentUser]);
 
-  const handleChange = async (e) => {
+  const handleChange = (e) => {
     setuserDetails({
       ...userDetails,
       [e.target.name]: e.target.value
-    })
-  }
+    });
+  };
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
@@ -70,9 +79,20 @@ export default function Login() {
         email: userDetails.email,
         password: userDetails.password
       });
-      if (response.data) {
-        localStorage.setItem("RegistrationData", JSON.stringify(response.data.data));
-        alert("Login successful!");
+
+      if (response.data && response.data.data) {
+        const userData = response.data.data;
+        
+        localStorage.setItem("RegistrationData", JSON.stringify(userData));
+        alert(response.data.message || "Login successful!");
+
+        // Route evaluation
+        if (userData.role === "admin" || response.data.isAdmin === true) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+        window.location.reload();
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Something went wrong during login.";
@@ -84,13 +104,13 @@ export default function Login() {
       });
     }
   };
+
   return (
     <div>
       <title>Login — TripAgent</title>
       <meta name="description" content="Log in to your TripAgent account to manage bookings, explore custom itineraries, and view saved trips." />
       <link rel="stylesheet" href="assets/css/style.css" />
 
-      {/* */}
       <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container nav">
           <Link to="/" className="logo">
@@ -104,7 +124,17 @@ export default function Login() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
-            <li><Link to="/Log" className="active">Login</Link></li>
+            
+            {/* STRICT SYSTEM EVALUATION: Renders ONLY if the active token profile explicitly states 'admin' */}
+            {currentUser && currentUser.role === "admin" ? (
+              <li>
+                <Link to="/admin" style={{ color: '#e11d48', fontWeight: '700', border: '1px dashed #e11d48', padding: '4px 8px', borderRadius: '4px' }}>
+                  Admin Dashboard
+                </Link>
+              </li>
+            ) : null}
+
+            <li><Link to="/Login" className="active">Login</Link></li>
           </ul>
           <div className="nav-cta">
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
@@ -121,12 +151,10 @@ export default function Login() {
         </div>
       </header>
 
-      {/* */}
       <section className="hero" style={{ minHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')" }}></div>
         <div className="hero-overlay" style={{ opacity: 0.65 }}></div>
 
-        {/* */}
         <div className="container animate-fade-in" style={{ zIndex: 2, display: 'flex', justifyContent: 'center', margin: '120px auto 60px auto' }}>
           <div className="card-premium" style={{ width: '100%', maxWidth: '450px', background: 'rgba(255, 255, 255, 0.95)', color: '#111', padding: '40px 30px', border: 'none' }}>
 
@@ -140,7 +168,7 @@ export default function Login() {
 
             <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-              {/* Email Field */}
+              {/* Email Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label htmlFor="login-email" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Email Address</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -158,7 +186,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Password Field */}
+              {/* Password Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label htmlFor="login-password" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Password</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -176,7 +204,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Form Meta Links */}
+              {/* Checkboxes / Meta */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#555' }}>
                   <input
@@ -189,15 +217,15 @@ export default function Login() {
                 <a href="#forgot" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none', fontWeight: '500' }}>Forgot Password?</a>
               </div>
 
-              {/* Action Submit Button */}
               <button type="submit" className="btn btn-primary" style={{ padding: '14px', borderRadius: '6px', width: '100%', cursor: 'pointer', fontSize: '1rem', fontWeight: '600', marginTop: '10px' }}>
                 Sign In <i data-lucide="arrow-right" style={{ display: 'inline-block', verticalAlign: 'middle', marginLeft: '6px' }}></i>
               </button>
 
             </form>
 
-            {/* Sign Up Redirect link */}
-            <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '0.9rem', color: '#666' }}>
+            {/* Context link below main button forms */}
+
+            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '15px' }}>
               Don't have an account? <Link to="/Register" style={{ color: 'var(--color-primary, #0ea5e9)', fontWeight: '600', textDecoration: 'none' }}>Create Account</Link>
             </div>
 
@@ -205,7 +233,6 @@ export default function Login() {
         </div>
       </section>
 
-      {/* */}
       <footer className="site-footer">
         <div className="container footer-grid">
           <div className="footer-col">

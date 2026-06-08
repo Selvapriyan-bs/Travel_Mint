@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom';
 export default function Contact() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
   // Contact form state
   const [name, setName] = useState('');
   const [emailField, setEmailField] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-
+  const [role, setRole] = useState("");
   // FAQ accordion state
   const [activeFaq, setActiveFaq] = useState(null);
 
@@ -42,7 +42,8 @@ export default function Contact() {
         const parsedData = JSON.parse(registrationData);
         return {
           name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
-          email: parsedData.email || ""
+          email: parsedData.email || "",
+          role: parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -132,7 +133,7 @@ export default function Contact() {
           <Link to="/" className="logo">
             <i data-lucide="compass"></i> Trip<span>Agent</span>
           </Link>
-          
+
           <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/destination">Destinations</Link></li>
@@ -141,7 +142,12 @@ export default function Contact() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact" className="active">Contact</Link></li>
-            
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
+
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
@@ -153,14 +159,14 @@ export default function Contact() {
           </ul>
 
           <div className="nav-cta">
-            {user && (
+            {user && user.role === "user"?(
               <Link to="/dashboard" className="btn btn-outline btn-sm" style={{ marginRight: '10px' }}>
                 <i data-lucide="layout-dashboard"></i> My Dashboard
               </Link>
-            )}
+            ): null }
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
           </div>
-                     
+
           {user && (
             <div className="user-profile-banner">
               <div className="user-text-avatar">
@@ -176,7 +182,7 @@ export default function Contact() {
               </div>
             </div>
           )}
-          
+
           <div
             className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
@@ -207,7 +213,7 @@ export default function Contact() {
             <div className="card-premium" style={{ height: 'auto', padding: '30px' }}>
               <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px' }}>Send Us a Message</h2>
               <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.9rem' }}>Fill out this form and our support agents will respond to your email within 12 hours.</p>
-              
+
               {isSubmitted ? (
                 <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius-md)' }}>
                   <i data-lucide="badge-check" style={{ width: '48px', height: '48px', color: '#22c55e', marginBottom: '16px' }}></i>
@@ -219,10 +225,10 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div className="form-group-custom" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Full Name *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. John Doe" 
-                      required 
+                    <input
+                      type="text"
+                      placeholder="e.g. John Doe"
+                      required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       style={{ padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit' }}
@@ -230,10 +236,10 @@ export default function Contact() {
                   </div>
                   <div className="form-group-custom" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Email Address *</label>
-                    <input 
-                      type="email" 
-                      placeholder="e.g. john@example.com" 
-                      required 
+                    <input
+                      type="email"
+                      placeholder="e.g. john@example.com"
+                      required
                       value={emailField}
                       onChange={(e) => setEmailField(e.target.value)}
                       style={{ padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit' }}
@@ -241,10 +247,10 @@ export default function Contact() {
                   </div>
                   <div className="form-group-custom" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Subject *</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Custom itinerary request" 
-                      required 
+                    <input
+                      type="text"
+                      placeholder="e.g. Custom itinerary request"
+                      required
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                       style={{ padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit' }}
@@ -252,10 +258,10 @@ export default function Contact() {
                   </div>
                   <div className="form-group-custom" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>Your Message *</label>
-                    <textarea 
-                      rows="5" 
-                      placeholder="Type details about your holiday plans, target travel dates, or any special support needs here..." 
-                      required 
+                    <textarea
+                      rows="5"
+                      placeholder="Type details about your holiday plans, target travel dates, or any special support needs here..."
+                      required
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       style={{ padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit', resize: 'vertical', fontFamily: 'inherit' }}
@@ -313,12 +319,12 @@ export default function Contact() {
 
               {/* Map Placeholder */}
               <div className="card-premium" style={{ height: '230px', position: 'relative', overflow: 'hidden', padding: 0 }}>
-                <div 
-                  style={{ 
-                    position: 'absolute', 
-                    inset: 0, 
-                    backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80')", 
-                    backgroundSize: 'cover', 
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundImage: "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=600&q=80')",
+                    backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     filter: 'brightness(0.4) grayscale(0.5)'
                   }}
@@ -329,10 +335,10 @@ export default function Contact() {
                   <h4 style={{ color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)', marginTop: '8px' }}>TripAgent Chennai Office</h4>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>Click to open in Google Maps</p>
                 </div>
-                <a 
-                  href="https://maps.google.com" 
-                  target="_blank" 
-                  rel="noreferrer" 
+                <a
+                  href="https://maps.google.com"
+                  target="_blank"
+                  rel="noreferrer"
                   style={{ position: 'absolute', inset: 0, zIndex: 3 }}
                 ></a>
               </div>
@@ -347,30 +353,30 @@ export default function Contact() {
               <h2>Frequently Asked Questions</h2>
               <p>Get answers to common queries regarding tour packages, booking requests, and cancellations.</p>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '30px' }}>
               {faqs.map((faq, index) => (
-                <div 
-                  key={index} 
-                  style={{ 
-                    background: 'var(--surface)', 
-                    border: '1px solid var(--border-color)', 
-                    borderRadius: 'var(--radius-sm)', 
+                <div
+                  key={index}
+                  style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-sm)',
                     overflow: 'hidden',
-                    color:'black',
+                    color: 'black',
                     transition: 'all 0.3s ease'
                   }}
                 >
-                  <button 
+                  <button
                     onClick={() => toggleFaq(index)}
-                    style={{ 
-                      width: '100%', 
-                      padding: '18px 24px', 
-                      background: 'none', 
-                      border: 'none', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
+                    style={{
+                      width: '100%',
+                      padding: '18px 24px',
+                      background: 'none',
+                      border: 'none',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
                       cursor: 'pointer',
                       textAlign: 'left',
                       color: 'inherit',
@@ -379,16 +385,16 @@ export default function Contact() {
                     }}
                   >
                     <span>{faq.question}</span>
-                    <i  class="img_toggle"
-                      data-lucide={activeFaq === index ? "chevron-up" : "chevron-down"} 
-                      style={{ color: 'var(--primary)', transition: 'transform 0.3s ease',}}
+                    <i class="img_toggle"
+                      data-lucide={activeFaq === index ? "chevron-up" : "chevron-down"}
+                      style={{ color: 'var(--primary)', transition: 'transform 0.3s ease', }}
                     ></i>
                   </button>
                   {activeFaq === index && (
-                    <div 
-                      style={{ 
-                        padding: '0 24px 24px 24px', 
-                        color: 'var(--text-secondary)', 
+                    <div
+                      style={{
+                        padding: '0 24px 24px 24px',
+                        color: 'var(--text-secondary)',
                         fontSize: '0.9rem',
                         lineHeight: '1.6',
                         animation: 'fadeIn 0.4s ease'

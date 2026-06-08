@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function About() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+  const [role,setRole]=useState("");
   // Safely parse local storage registration data and establish the active logged-in user state
   const [user, setUser] = useState(() => {
     try {
@@ -13,7 +13,8 @@ export default function About() {
         const parsedData = JSON.parse(registrationData);
         return {
           name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
-          email: parsedData.email || ""
+          email: parsedData.email || "",
+            role:parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -77,7 +78,7 @@ export default function About() {
           <Link to="/" className="logo">
             <i data-lucide="compass"></i> Trip<span>Agent</span>
           </Link>
-          
+
           <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/destination">Destinations</Link></li>
@@ -86,7 +87,11 @@ export default function About() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about" className="active">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
-            
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
@@ -98,14 +103,14 @@ export default function About() {
           </ul>
 
           <div className="nav-cta">
-            {user && (
+            {user && user.role === "user" ? (
               <Link to="/dashboard" className="btn btn-outline btn-sm" style={{ marginRight: '10px' }}>
                 <i data-lucide="layout-dashboard"></i> My Dashboard
               </Link>
-            )}
+            ) : null}
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
           </div>
-                   
+
           {user && (
             <div className="user-profile-banner">
               <div className="user-text-avatar">
@@ -121,7 +126,7 @@ export default function About() {
               </div>
             </div>
           )}
-          
+
           <div
             className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
@@ -158,10 +163,10 @@ export default function About() {
               </p>
             </div>
             <div>
-              <img 
-                src="https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=800&q=80" 
-                alt="Travel Concept" 
-                style={{ width: '100%', borderRadius: 'var(--radius-md)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} 
+              <img
+                src="https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=800&q=80"
+                alt="Travel Concept"
+                style={{ width: '100%', borderRadius: 'var(--radius-md)', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
               />
             </div>
           </div>

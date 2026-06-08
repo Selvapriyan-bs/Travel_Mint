@@ -86,7 +86,7 @@ export default function PackageDetail() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [targetPackage, setTargetPackage] = useState(null);
-
+  const [role, setRole] = useState("");
   // URL Parameter parsing
   const { id: paramId } = useParams();
   const [searchParams] = useSearchParams();
@@ -111,7 +111,8 @@ export default function PackageDetail() {
         const parsedData = JSON.parse(registrationData);
         return {
           name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
-          email: parsedData.email || ""
+          email: parsedData.email || "",
+          role: parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -140,7 +141,7 @@ export default function PackageDetail() {
           if (!Array.isArray(incomingData) && typeof incomingData === 'object') {
             incomingData = incomingData.package || incomingData.packages || incomingData.data || [];
           }
-          
+
           const found = incomingData.find(p => String(p.id) === String(activeId) || String(p._id) === String(activeId));
           if (found) {
             // Merge with fallback itineraries if not present in DB
@@ -229,11 +230,11 @@ export default function PackageDetail() {
     );
   }
 
-  const destinationSlug = targetPackage.title.toLowerCase().includes('paris') ? 'paris' : 
-                          targetPackage.title.toLowerCase().includes('bali') ? 'bali' : 
-                          targetPackage.title.toLowerCase().includes('kyoto') ? 'kyoto' : 
-                          targetPackage.title.toLowerCase().includes('new york') ? 'newyork' : 
-                          targetPackage.title.toLowerCase().includes('sydney') ? 'sydney' : 'alps';
+  const destinationSlug = targetPackage.title.toLowerCase().includes('paris') ? 'paris' :
+    targetPackage.title.toLowerCase().includes('bali') ? 'bali' :
+      targetPackage.title.toLowerCase().includes('kyoto') ? 'kyoto' :
+        targetPackage.title.toLowerCase().includes('new york') ? 'newyork' :
+          targetPackage.title.toLowerCase().includes('sydney') ? 'sydney' : 'alps';
 
   return (
     <div>
@@ -243,7 +244,7 @@ export default function PackageDetail() {
           <Link to="/" className="logo">
             <i data-lucide="compass"></i> Trip<span>Agent</span>
           </Link>
-          
+
           <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/destination">Destinations</Link></li>
@@ -252,7 +253,12 @@ export default function PackageDetail() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
             <li><Link to="/contact">Contact</Link></li>
-            
+            {user && user.role === "admin" ? (
+              <li>
+                <Link to="/admin">Admin Dashboard</Link>
+              </li>
+            ) : null}
+
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
@@ -271,7 +277,7 @@ export default function PackageDetail() {
             )}
             <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
           </div>
-                   
+
           {user && (
             <div className="user-profile-banner">
               <div className="user-text-avatar">
@@ -287,7 +293,7 @@ export default function PackageDetail() {
               </div>
             </div>
           )}
-          
+
           <div
             className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
@@ -375,7 +381,7 @@ export default function PackageDetail() {
             {/* Review Section */}
             <div>
               <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '20px' }}>Traveler Reviews</h2>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Form to submit review */}
                 <div className="card-premium" style={{ height: 'auto', padding: '24px' }}>
@@ -387,16 +393,16 @@ export default function PackageDetail() {
                   )}
                   <form onSubmit={handleReviewSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
                     <div className="grid-2" style={{ gap: '16px' }}>
-                      <input 
-                        type="text" 
-                        placeholder="Your Name (e.g. Emily Smith)" 
-                        required 
+                      <input
+                        type="text"
+                        placeholder="Your Name (e.g. Emily Smith)"
+                        required
                         value={newAuthor}
                         onChange={(e) => setNewAuthor(e.target.value)}
                         style={{ padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit' }}
                       />
-                      <select 
-                        value={newRating} 
+                      <select
+                        value={newRating}
                         onChange={(e) => setNewRating(e.target.value)}
                         style={{ padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit' }}
                       >
@@ -407,10 +413,10 @@ export default function PackageDetail() {
                         <option value="1">1 Star (Terrible)</option>
                       </select>
                     </div>
-                    <textarea 
-                      rows="3" 
-                      placeholder="Write your detailed review about the tour hotels, transport guides, and activities here..." 
-                      required 
+                    <textarea
+                      rows="3"
+                      placeholder="Write your detailed review about the tour hotels, transport guides, and activities here..."
+                      required
                       value={newContent}
                       onChange={(e) => setNewContent(e.target.value)}
                       style={{ padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', background: 'var(--surface-alt)', color: 'inherit', resize: 'vertical' }}
@@ -448,9 +454,9 @@ export default function PackageDetail() {
                 <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fff' }}>&#8377;{targetPackage.price.toLocaleString()}</span>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>/ person</span>
               </div>
-              
+
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '16px 0' }} />
-              
+
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
                 <li style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Duration</span>
@@ -466,9 +472,9 @@ export default function PackageDetail() {
                 </li>
               </ul>
 
-              <Link 
-                to={`/booking?destination=${destinationSlug}`} 
-                className="btn btn-primary" 
+              <Link
+                to={`/booking?destination=${destinationSlug}`}
+                className="btn btn-primary"
                 style={{ width: '100%', padding: '12px', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
               >
                 <i data-lucide="calendar"></i> Book This Deal

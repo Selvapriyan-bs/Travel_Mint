@@ -1,0 +1,232 @@
+/* ==========================================================================
+   TripAgent Admin Portal Modal Forms Extension
+   ========================================================================== */
+
+/* ─── PORTAL OVERLAY CONTAINER ────────────────────────────────────────── */
+.modal-portal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.85); /* Matches --bg-primary with high alpha opacity */
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2147483647; /* Escapes all layout stacking layers completely */
+  padding: 20px;
+}
+
+/* ─── FLOATING MODAL WINDOW FRAME ─────────────────────────────────────── */
+.modal-window {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  width: 100%;
+  max-width: 550px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Encapsulates structural scrolling internally */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Smooth window pop intro transition */
+@keyframes modalSlideIn {
+  from {
+    transform: scale(0.96) translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ─── MODAL COMPONENTS & INNER BLOCKS ─────────────────────────────────── */
+.modal-window .modal-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.modal-window .modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.modal-window .modal-header button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.modal-window .modal-header button:hover {
+  color: var(--text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Body viewport container with scroll tracking */
+.modal-window .modal-body {
+  padding: 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Custom modern scrollbar styles for inner form viewport */
+.modal-window .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-window .modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-window .modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+/* ─── IN-MODAL FORM FIELDS & ROW GRID STRUCTS ────────────────────────── */
+.modal-window form {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+}
+
+.modal-window label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+/* Complete fallback override for elements inside the window portal context */
+.modal-window input[type="text"],
+.modal-window input[type="number"],
+.modal-window input[type="url"],
+.modal-window select,
+.modal-window textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition);
+}
+
+.modal-window input:focus,
+.modal-window select:focus,
+.modal-window textarea:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+}
+
+.modal-window select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.modal-window textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ─── ACTION BUTTONS BAR ──────────────────────────────────────────────── */
+.modal-window .modal-footer {
+  padding: 18px 28px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.modal-window .modal-footer button[type="button"] {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.modal-window .modal-footer button[type="button"]:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--text-secondary);
+}
+
+.modal-window .modal-footer button[type="submit"] {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.modal-window .modal-footer button[type="submit"]:hover:not(:disabled) {
+  opacity: 0.95;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+/* ─── RESPONSIVE SYSTEM GRID OVERRIDES ────────────────────────────────── */
+@media (max-width: 576px) {
+  .modal-portal-overlay {
+    padding: 0;
+  }
+  
+  .modal-window {
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  
+  .modal-window .modal-body {
+    padding: 20px;
+  }
+  
+  /* Collapse input grid cells down to single columns on small phones */
+  .modal-window div[style*="display: grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
