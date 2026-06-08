@@ -118,7 +118,7 @@ export default function Booking() {
   const handleBookingSubmit = async (e) => {
     if (e) e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/booking/add", details);
+      const res = await axios.post("https://trip-agent-backend.onrender.com/api/booking/add", details);
       alert(res.data.message || "Details Received");
     } catch (error) {
       setDetails({

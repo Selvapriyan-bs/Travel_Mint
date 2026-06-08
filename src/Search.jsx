@@ -102,7 +102,7 @@ export default function Search() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/package");
+        const response = await axios.get("https://trip-agent-backend.onrender.com/api/package");
         if (response) {
           let incomingData = response.data;
 

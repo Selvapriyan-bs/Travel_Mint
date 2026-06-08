@@ -134,7 +134,7 @@ export default function PackageDetail() {
     const fetchPackageDetail = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:5000/api/package");
+        const response = await axios.get("https://trip-agent-backend.onrender.com/api/package");
         if (response && response.data) {
           let incomingData = response.data;
           if (!Array.isArray(incomingData) && typeof incomingData === 'object') {

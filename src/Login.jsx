@@ -66,7 +66,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:5000/api/user/login", {
+      const response = await axios.post("https://trip-agent-backend.onrender.com/api/user/login", {
         email: userDetails.email,
         password: userDetails.password
       });
