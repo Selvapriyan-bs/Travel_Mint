@@ -3101,3 +3101,6 @@ tbody tr:hover {
 .row{
  display: flex;
 }
+.img_toggle:active{
+  transform: rotate(180deg);
+}

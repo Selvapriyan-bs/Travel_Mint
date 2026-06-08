@@ -71,7 +71,7 @@ export default function Homepage() {
 
   const handleLogout = () => {
     setUser(null);
-    //  localStorage.removeItem('RegistrationData');
+     localStorage.removeItem('RegistrationData');
     // sessionStorage.removeItem('RegistrationData');
   };
 
@@ -93,7 +93,9 @@ export default function Homepage() {
             <li><Link to="/destination">Destinations</Link></li>
             <li><Link to="/search">Search</Link></li>
             <li><Link to="/booking">Booking</Link></li>
-            
+            <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
             {/* Conditional Authentication Menu Items */}
             {user ? (
               <li className="mobile-only-user">

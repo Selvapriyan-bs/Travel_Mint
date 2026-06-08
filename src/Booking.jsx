@@ -138,7 +138,7 @@ export default function Booking() {
 
   const handleLogout = () => {
     setUser(null);
-    // localStorage.removeItem('RegistrationData');
+    localStorage.removeItem('RegistrationData');
     // sessionStorage.removeItem('RegistrationData');
   };
 
@@ -160,6 +160,9 @@ export default function Booking() {
             <li><Link to="/destination">Destinations</Link></li>
             <li><Link to="/search">Search</Link></li>
             <li><Link to="/booking" className="active">Booking</Link></li>
+            <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>

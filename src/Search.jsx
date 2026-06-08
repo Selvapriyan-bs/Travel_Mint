@@ -100,22 +100,33 @@ export default function Search() {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    const fetchData = async()=>{
-      try{
-    const response = await axios.get("http://localhost:5000/api/package");
-    if (response) {
-      setPackage(response.data);
-    }
-    else {
-      alert("error couldn't find the details");
-    }
-  }
-  catch(err){
-    console.error("API error:", err);
-  }
-  };
-  fetchData();
-},[])
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/package");
+        if (response) {
+          let incomingData = response.data;
+
+          // If the backend wrapped it inside an object property (e.g., { packages: [...] })
+          if (!Array.isArray(incomingData) && typeof incomingData === 'object') {
+            incomingData = incomingData.package || incomingData.packages || incomingData.data || [];
+          }
+          if (Array.isArray(incomingData)) {
+            setPackage(incomingData);
+          } else {
+            console.error("Data received is not an array:", response.data);
+            setPackage([]); // Safe fallback to avoid UI crash
+          }
+        }
+        else {
+          alert("error couldn't find the details");
+        }
+      }
+      catch (err) {
+        console.error("API error:", err);
+      }
+    };
+    fetchData();
+  }, [])
   // Safely parse local storage registration data and establish the active logged-in user state
   const [user, setUser] = useState(() => {
     try {
@@ -124,8 +135,8 @@ export default function Search() {
         const parsedData = JSON.parse(registrationData);
         // Fallback to extraction from email if name wasn't explicitly saved
         return {
-          name: parsedData.name || parsedData.email.split('@')[0],
-          email: parsedData.email
+          name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
+          email: parsedData.email || ""
         };
       }
     } catch (error) {
@@ -135,7 +146,7 @@ export default function Search() {
   });
   const handleLogout = () => {
     setUser(null);
-    // localStorage.removeItem('RegistrationData');
+    localStorage.removeItem('RegistrationData');
     // sessionStorage.removeItem('RegistrationData');
   };
 
@@ -272,9 +283,9 @@ export default function Search() {
 
       const currentPrice = Number(pkg.price);
 
-      if (selectedPrices.under1000 && currentPrice< 1000) priceMatch = true;
-      if (selectedPrices.middle1000to1500 && currentPrice >= 1000 && currentPrice <= 1500) priceMatch = true;
-      if (selectedPrices.above1500 && currentPrice > 1500) priceMatch = true;
+      if (selectedPrices.under1000 && currentPrice < 35000) priceMatch = true;
+      if (selectedPrices.middle1000to1500 && currentPrice >= 35000 && currentPrice <= 55000) priceMatch = true;
+      if (selectedPrices.above1500 && currentPrice > 55000) priceMatch = true;
       if (!priceMatch) return false;
     }
 
@@ -282,9 +293,9 @@ export default function Search() {
     const anyDurationSelected = Object.values(selectedDurations).some(Boolean);
     if (anyDurationSelected) {
       let durationMatch = false;
-      const suday= Number(pkg.days)
+      const suday = Number(pkg.days)
       if (selectedDurations.short1to5 && suday <= 5) durationMatch = true;
-      if (selectedDurations.medium6to8 && suday >= 6 && pkg.days <= 8) durationMatch = true;
+      if (selectedDurations.medium6to8 && suday >= 6 && suday <= 8) durationMatch = true;
       if (selectedDurations.long9plus && suday >= 9) durationMatch = true;
       if (!durationMatch) return false;
     }
@@ -315,6 +326,9 @@ export default function Search() {
             <li><Link to="/destination">Destinations</Link></li>
             <li><Link to="/search" className="active">Search</Link></li>
             <li><Link to="/booking">Booking</Link></li>
+            <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
             {user ? (
               <li className="mobile-only-user">
                 <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
@@ -407,15 +421,15 @@ export default function Search() {
               <div className="filter-checkboxes">
                 <label className="checkbox-group">
                   <input type="checkbox" checked={selectedPrices.under1000} onChange={() => handlePriceChange("under1000")} />
-                  <span>Under &#8377;30,000</span>
+                  <span>Under &#8377;35,000</span>
                 </label>
                 <label className="checkbox-group">
                   <input type="checkbox" checked={selectedPrices.middle1000to1500} onChange={() => handlePriceChange("middle1000to1500")} />
-                  <span>&#8377;56,000 - &#8377;45,500</span>
+                  <span>&#8377;35,000 - &#8377;55,000</span>
                 </label>
                 <label className="checkbox-group">
                   <input type="checkbox" checked={selectedPrices.above1500} onChange={() => handlePriceChange("above1500")} />
-                  <span>Above &#8377;43,500</span>
+                  <span>Above &#8377;55,000</span>
                 </label>
               </div>
             </div>
@@ -474,7 +488,7 @@ export default function Search() {
                     <h3>{pkg.title}</h3>
                     <p>{pkg.description}</p>
                     <div className="card-footer">
-                      <div className="card-price">&#8377;{pkg.price.toLocaleString()} <span>/ person</span></div>
+                      <div className="card-price">&#8377;{(pkg.price ?? 0).toLocaleString()} <span>/ person</span></div>
                       <Link to={`/booking?destination=${pkg.id === 1 ? 'paris' : pkg.id === 2 ? 'bali' : pkg.id === 3 ? 'kyoto' : pkg.id === 4 ? 'newyork' : pkg.id === 5 ? 'sydney' : 'alps'}`} className="btn btn-outline btn-sm">Book Deal</Link>
                     </div>
                   </div>

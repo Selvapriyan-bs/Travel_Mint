@@ -80,7 +80,7 @@ export default function Register() {
         return;
       }
       
-      const res = await axios.post("http://localhost:5000/api/user/signup", form);
+      const res = await axios.post("https://trip-agent-backend.onrender.com/api/user/signup", form);
       alert(res.data.message || "Account created successfully!");
       
       // Set the active authenticated dashboard context block
