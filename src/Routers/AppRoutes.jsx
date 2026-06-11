@@ -9,9 +9,12 @@ import Login from "../Login";
 import Register from "../Register";
 import About from "../About";
 import Contact from "../Contact";
-import PackageDetail from "../PackageDetail";
 import UserDashboard from "../UserDashboard";
 import Blog from "../Blog";
+import BlogDetail from "../BlogDetail";
+import Privacy from "../Privacy";
+import Terms from "../Terms";
+import PackageDetails from "../PackageDetails";
 
 function AppRoutes() {
     return (
@@ -25,9 +28,12 @@ function AppRoutes() {
             <Route path="/register" element={<Register />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/package-detail" element={<PackageDetail />} />
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogDetail />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/package/:id" element={<PackageDetails />} />
         </Routes>
     );
 }

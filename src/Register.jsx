@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
+import Footer from './Components/Footer';
 
 export default function Register() {
   const [scrolled, setScrolled] = useState(false);
@@ -76,12 +78,12 @@ export default function Register() {
     e.preventDefault();
     try {
       if (!agreeTerms) {
-        alert("Please agree to the Terms of Service and Privacy Policy.");
+        toast.error("Please agree to the Terms of Service and Privacy Policy.");
         return;
       }
       
       const res = await axios.post("https://trip-agent-backend.onrender.com/api/user/signup", form);
-      alert(res.data.message || "Account created successfully!");
+      toast.success(res.data.message || "Account created successfully!");
       
       // Set the active authenticated dashboard context block
       setActiveUser({
@@ -100,7 +102,7 @@ export default function Register() {
       });
       setAgreeTerms(false);
     } catch (error) {
-      alert(error.response?.data?.message || "Signup Failed");
+      toast.error(error.response?.data?.message || "Signup Failed");
     }
   };
 
@@ -115,9 +117,10 @@ export default function Register() {
 
   return (
     <div>
+      <Toaster position="top-center" toastOptions={{ style: { background: '#1e293b', color: '#f1f5f9', border: '1px solid #334155' } }} />
       {/* Header element markup link configurations */}
       <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
-        <div className="container nav">
+        {/* <div className="container nav">
           <Link to="/" className="logo">
             <i data-lucide="compass"></i> Trip<span>Agent</span>
           </Link>
@@ -125,14 +128,10 @@ export default function Register() {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/destination">Destinations</Link></li>
             <li><Link to="/search">Search</Link></li>
-            <li><Link to="/booking">Booking</Link></li>
-          </ul>
-          <div className="nav-cta">
-            <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
-          </div>
+          </ul> */}
 
           {/* Fixed: Only displays when user registration completes successfully */}
-          {activeUser && (
+          {/* {activeUser && (
             <div className="user-profile-banner">
               <div className="user-text-avatar">
                 {initialLetter}
@@ -143,9 +142,9 @@ export default function Register() {
                 <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
               </div>
             </div>
-          )}
+          )} */}
 
-          <div
+          {/* <div
             className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -154,7 +153,7 @@ export default function Register() {
             <span></span>
             <span></span>
           </div>
-        </div>
+        </div> */}
       </header>
 
       {/* Main Container Hero Display Wrapper */}
@@ -163,21 +162,21 @@ export default function Register() {
         <div className="hero-overlay" style={{ opacity: 0.65 }}></div>
 
         <div className="container animate-fade-in" style={{ zIndex: 2, display: 'flex', justifyContent: 'center', margin: '120px auto 60px auto' }}>
-          <div className="card-premium" style={{ width: '100%', maxWidth: '480px', background: 'rgba(255, 255, 255, 0.95)', color: '#111', padding: '40px 30px', border: 'none' }}>
+          <div className="card-premium" style={{ width: '100%', maxWidth: '480px', color: '#111', padding: '40px 30px' }}>
 
             <div style={{ textAlign: 'center', marginBottom: '25px' }}>
               <div style={{ color: 'var(--color-primary, #0ea5e9)', fontSize: '2.5rem', marginBottom: '10px' }}>
                 <i data-lucide="user-plus" style={{ width: '48px', height: '48px' }}></i>
               </div>
-              <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px', color: '#1a1a1a' }}>Join TripAgent</h2>
-              <p style={{ color: '#666', fontSize: '0.95rem' }}>Sign up to access tailored deals and tracking tools</p>
+              <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px', color: '#f4f2f2' }}>Join TripAgent</h2>
+              <p style={{ color: '#adaaaa', fontSize: '0.95rem' }}>Sign up to access tailored deals and tracking tools</p>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
               {/* Full Name Field */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="reg-name" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Full Name</label>
+                <label htmlFor="reg-name" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#adaaaa' }}>Full Name</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <i data-lucide="user" style={{ position: 'absolute', left: '12px', width: '18px', height: '18px', color: '#999' }}></i>
                   <input
@@ -195,7 +194,7 @@ export default function Register() {
 
               {/* Email Field */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="reg-email" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Email Address</label>
+                <label htmlFor="reg-email" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#adaaaa' }}>Email Address</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <i data-lucide="mail" style={{ position: 'absolute', left: '12px', width: '18px', height: '18px', color: '#999' }}></i>
                   <input
@@ -213,7 +212,7 @@ export default function Register() {
 
               {/* Password Field */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="reg-password" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Password</label>
+                <label htmlFor="reg-password" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#adaaaa' }}>Password</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <i data-lucide="lock" style={{ position: 'absolute', left: '12px', width: '18px', height: '18px', color: '#999' }}></i>
                   <input
@@ -240,8 +239,8 @@ export default function Register() {
                   style={{ marginTop: '3px', cursor: 'pointer' }}
                   required
                 />
-                <label htmlFor="reg-terms" style={{ cursor: 'pointer', color: '#555', lineHeight: '1.4' }}>
-                  I agree to the <a href="#terms" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none' }}>Terms of Service</a> and <a href="#privacy" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none' }}>Privacy Policy</a>.
+                <label htmlFor="reg-terms" style={{ cursor: 'pointer', color: '#adaaaa', lineHeight: '1.4' }}>
+                  I agree to the <Link to="/terms" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none' }}>Terms of Service</Link> and <Link to="/privacy" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none' }}>Privacy Policy</Link>.
                 </label>
               </div>
 
@@ -253,60 +252,13 @@ export default function Register() {
             </form>
 
             {/* Back to Login Redirect Link */}
-            <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '0.9rem', color: '#666' }}>
+            <div style={{ textAlign: 'center', marginTop: '25px', fontSize: '0.9rem', color: '#bebbbb' }}>
               Already have an account? <Link to="/Login" style={{ color: 'var(--color-primary, #0ea5e9)', fontWeight: '600', textDecoration: 'none' }}>Sign In</Link>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Footer Area Element Markup */}
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-col">
-            <Link to="/" className="footer-logo">
-              <i data-lucide="compass"></i> Trip<span>Agent</span>
-            </Link>
-            <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
-            <div className="social-links">
-              <a href="#"><i data-lucide="facebook"></i></a>
-              <a href="#"><i data-lucide="instagram"></i></a>
-              <a href="#"><i data-lucide="twitter"></i></a>
-              <a href="#"><i data-lucide="youtube"></i></a>
-            </div>
-          </div>
-          <div className="footer-col">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/destination">Destinations</Link></li>
-              <li><Link to="/search">Search</Link></li>
-              <li><Link to="/booking">Booking</Link></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Top Destinations</h3>
-            <ul>
-              <li><a href="#">Paris, France</a></li>
-              <li><a href="#">Bali, Indonesia</a></li>
-              <li><a href="#">Kyoto, Japan</a></li>
-              <li><a href="#">New York, USA</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Newsletter</h3>
-            <p>Subscribe to get our weekly travel guides and exclusive members-only deals.</p>
-            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}>
-              <input type="email" placeholder="Your Email Address" required />
-              <button type="submit">Join</button>
-            </form>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
-          <p>Terms of Service &bull; Privacy Policy</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { useSnackbar } from './Components/SnackbarProvider';
+import Navbar from './Components/Navbar';
+import Footer from './Components/Footer';
 
 // const allPackages = [
 //   {
@@ -91,14 +94,12 @@ import axios from "axios";
 
 
 export default function Search() {
+  const showSnackbar = useSnackbar();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [allPackages, setPackage] = useState([])
-  // Login input states
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [role,setRole]=useState("");
+  const [countryShowAll, setCountryShowAll] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -118,7 +119,7 @@ export default function Search() {
           }
         }
         else {
-          alert("error couldn't find the details");
+          showSnackbar("error couldn't find the details", "error");
         }
       }
       catch (err) {
@@ -126,7 +127,7 @@ export default function Search() {
       }
     };
     fetchData();
-  }, [])
+  }, [showSnackbar])
   // Safely parse local storage registration data and establish the active logged-in user state
   const [user, setUser] = useState(() => {
     try {
@@ -151,20 +152,34 @@ export default function Search() {
     // sessionStorage.removeItem('RegistrationData');
   };
 
-  // Helper variable to pull the starting letter cleanly
-  const initialLetter = user && user.name ? user.name.charAt(0).toUpperCase() : "";
-  // Filter States
+
+  const countries = [...new Set(allPackages.map(p => p.country).filter(Boolean))].sort();
+  const displayedCountries = countryShowAll ? countries : countries.slice(0, 5);
+  const handleSelectAllCountries = () => {
+    const allChecked = Object.values(selectedCountries).every(Boolean);
+    const updated = {};
+    countries.forEach(c => { updated[c] = !allChecked; });
+    setSelectedCountries(updated);
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRegions, setSelectedRegions] = useState({
-    Europe: true,
-    Asia: true,
-    Americas: true,
-    Oceania: true
-  });
+  const [selectedCountries, setSelectedCountries] = useState({});
+  useEffect(() => {
+    if (countries.length > 0) {
+      setSelectedCountries(prev => {
+        const next = {};
+        countries.forEach(c => { next[c] = true; });
+        if (Object.keys(prev).length !== countries.length) return next;
+        return prev;
+      });
+    }
+  }, [allPackages]);
+
   const [selectedPrices, setSelectedPrices] = useState({
-    under1000: false,
-    middle1000to1500: false,
-    above1500: false
+    under35000: false,
+    middle35000to50000: false,
+    middle50000to65000: false,
+    above65000: false
   });
   const [selectedDurations, setSelectedDurations] = useState({
     short1to5: false,
@@ -212,13 +227,13 @@ export default function Search() {
     if (window.lucide) {
       window.lucide.createIcons();
     }
-  }, [searchQuery, selectedRegions, selectedPrices, selectedDurations, sortBy, menuOpen]);
+  }, [searchQuery, selectedCountries, selectedPrices, selectedDurations, sortBy, menuOpen]);
 
-  // Handle region checkbox changes
-  const handleRegionChange = (region) => {
-    setSelectedRegions(prev => ({
+  // Handle country checkbox changes
+  const handleCountryChange = (country) => {
+    setSelectedCountries(prev => ({
       ...prev,
-      [region]: !prev[region]
+      [country]: !prev[country]
     }));
   };
 
@@ -241,16 +256,14 @@ export default function Search() {
   // Reset all filters
   const handleResetFilters = () => {
     setSearchQuery("");
-    setSelectedRegions({
-      Europe: true,
-      Asia: true,
-      Americas: true,
-      Oceania: true
-    });
+    const allCountries = {};
+    countries.forEach(c => { allCountries[c] = true; });
+    setSelectedCountries(allCountries);
     setSelectedPrices({
-      under1000: false,
-      middle1000to1500: false,
-      above1500: false
+      under35000: false,
+      middle35000to50000: false,
+      middle50000to65000: false,
+      above65000: false
     });
     setSelectedDurations({
       short1to5: false,
@@ -271,9 +284,9 @@ export default function Search() {
       if (!matchTitle && !matchDesc && !matchDest) return false;
     }
 
-    // 2. Region match
-    const anyRegionSelected = Object.values(selectedRegions).some(Boolean);
-    if (anyRegionSelected && !selectedRegions[pkg.region]) {
+    // 2. Country match
+    const anyCountrySelected = Object.values(selectedCountries).some(Boolean);
+    if (anyCountrySelected && !selectedCountries[pkg.country]) {
       return false;
     }
 
@@ -284,9 +297,10 @@ export default function Search() {
 
       const currentPrice = Number(pkg.price);
 
-      if (selectedPrices.under1000 && currentPrice < 35000) priceMatch = true;
-      if (selectedPrices.middle1000to1500 && currentPrice >= 35000 && currentPrice <= 55000) priceMatch = true;
-      if (selectedPrices.above1500 && currentPrice > 55000) priceMatch = true;
+      if (selectedPrices.under35000 && currentPrice < 35000) priceMatch = true;
+      if (selectedPrices.middle35000to50000 && currentPrice >= 35000 && currentPrice < 50000) priceMatch = true;
+      if (selectedPrices.middle50000to65000 && currentPrice >= 50000 && currentPrice < 65000) priceMatch = true;
+      if (selectedPrices.above65000 && currentPrice >= 65000) priceMatch = true;
       if (!priceMatch) return false;
     }
 
@@ -316,60 +330,7 @@ export default function Search() {
     <div>
       <title>Search Packages — TripAgent</title>
 
-      {/* <!-- Header --> */}
-      <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
-        <div className="container nav">
-          <Link to="/" className="logo">
-            <i data-lucide="compass"></i> Trip<span>Agent</span>
-          </Link>
-          <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/destination">Destinations</Link></li>
-            <li><Link to="/search" className="active">Search</Link></li>
-            <li><Link to="/booking">Booking</Link></li>
-            <li><Link to="/blog">Blog</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            {user && user.role === "admin" ? (
-              <li>
-                <Link to="/admin">Admin Dashboard</Link>
-              </li>
-            ) : null}
-            {user ? (
-              <li className="mobile-only-user">
-                <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
-                <button onClick={handleLogout} className="btn-logout-link">Logout</button>
-              </li>
-            ) : (
-              <li><Link to="/Login">Login</Link></li>
-            )}
-          </ul>
-          <div className="nav-cta">
-            <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
-          </div>
-          {user && (
-            <div className="user-profile-banner">
-              <div className="user-text-avatar">
-                {initialLetter}
-              </div>
-              <div className="user-info-dropdown">
-                <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-                <span className="user-email-sub">{user.email}</span>
-                <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-              </div>
-            </div>
-          )}
-          <div
-            className={`nav-toggle ${menuOpen ? 'active' : ''}`}
-            id="nav-toggle"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </header>
+      <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="search" />
 
       {/* <!-- Hero Section --> */}
       <section className="hero" style={{ minHeight: '45vh' }}>
@@ -401,41 +362,53 @@ export default function Search() {
             </div>
 
             <div className="filter-section">
-              <h4>Destinations</h4>
-              <div className="filter-checkboxes">
-                <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedRegions.Europe} onChange={() => handleRegionChange("Europe")} />
-                  <span>Europe</span>
-                </label>
-                <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedRegions.Asia} onChange={() => handleRegionChange("Asia")} />
-                  <span>Asia</span>
-                </label>
-                <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedRegions.Americas} onChange={() => handleRegionChange("Americas")} />
-                  <span>Americas</span>
-                </label>
-                <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedRegions.Oceania} onChange={() => handleRegionChange("Oceania")} />
-                  <span>Oceania</span>
-                </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h4 style={{ margin: 0 }}>Country</h4>
+                <button
+                  type="button"
+                  onClick={handleSelectAllCountries}
+                  style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--surface-alt)', cursor: 'pointer', color: 'inherit' }}
+                >
+                  {Object.values(selectedCountries).every(Boolean) ? 'Deselect All' : 'Select All'}
+                </button>
               </div>
+              <div className="filter-checkboxes">
+                {displayedCountries.map(country => (
+                  <label key={country} className="checkbox-group">
+                    <input type="checkbox" checked={selectedCountries[country] ?? true} onChange={() => handleCountryChange(country)} />
+                    <span>{country}</span>
+                  </label>
+                ))}
+              </div>
+              {countries.length > 5 && (
+                <button
+                  type="button"
+                  onClick={() => setCountryShowAll(!countryShowAll)}
+                  style={{ fontSize: '0.8rem', padding: '4px 0', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 600, marginTop: '8px' }}
+                >
+                  {countryShowAll ? 'Show Less' : `Show More (${countries.length - 5} more)`}
+                </button>
+              )}
             </div>
 
             <div className="filter-section">
               <h4>Price Budget</h4>
               <div className="filter-checkboxes">
                 <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedPrices.under1000} onChange={() => handlePriceChange("under1000")} />
+                  <input type="checkbox" checked={selectedPrices.under35000} onChange={() => handlePriceChange("under35000")} />
                   <span>Under &#8377;35,000</span>
                 </label>
                 <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedPrices.middle1000to1500} onChange={() => handlePriceChange("middle1000to1500")} />
-                  <span>&#8377;35,000 - &#8377;55,000</span>
+                  <input type="checkbox" checked={selectedPrices.middle35000to50000} onChange={() => handlePriceChange("middle35000to50000")} />
+                  <span>&#8377;35,000 - &#8377;50,000</span>
                 </label>
                 <label className="checkbox-group">
-                  <input type="checkbox" checked={selectedPrices.above1500} onChange={() => handlePriceChange("above1500")} />
-                  <span>Above &#8377;55,000</span>
+                  <input type="checkbox" checked={selectedPrices.middle50000to65000} onChange={() => handlePriceChange("middle50000to65000")} />
+                  <span>&#8377;50,000 - &#8377;65,000</span>
+                </label>
+                <label className="checkbox-group">
+                  <input type="checkbox" checked={selectedPrices.above65000} onChange={() => handlePriceChange("above65000")} />
+                  <span>Above &#8377;65,000</span>
                 </label>
               </div>
             </div>
@@ -495,7 +468,10 @@ export default function Search() {
                     <p>{pkg.description}</p>
                     <div className="card-footer">
                       <div className="card-price">&#8377;{(pkg.price ?? 0).toLocaleString()} <span>/ person</span></div>
-                      <Link to={`/booking?destination=${pkg.id === 1 ? 'paris' : pkg.id === 2 ? 'bali' : pkg.id === 3 ? 'kyoto' : pkg.id === 4 ? 'newyork' : pkg.id === 5 ? 'sydney' : 'alps'}`} className="btn btn-outline btn-sm">Book Deal</Link>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <Link to={`/package/${pkg._id || pkg.id}`} className="btn btn-outline btn-sm">Details</Link>
+                        <Link to={`/package/${pkg._id || pkg.id}`} className="btn btn-outline btn-sm">Book Deal</Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -511,53 +487,7 @@ export default function Search() {
         </div>
       </main>
 
-      {/* <!-- Footer --> */}
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-col">
-            <Link to="/" className="footer-logo">
-              <i data-lucide="compass"></i> Trip<span>Agent</span>
-            </Link>
-            <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
-            <div className="social-links">
-              <a href="#"><i data-lucide="facebook"></i></a>
-              <a href="#"><i data-lucide="instagram"></i></a>
-              <a href="#"><i data-lucide="twitter"></i></a>
-              <a href="#"><i data-lucide="youtube"></i></a>
-            </div>
-          </div>
-          <div className="container footer-col">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/destination">Destinations</Link></li>
-              <li><Link to="/search">Search</Link></li>
-              <li><Link to="/booking">Booking</Link></li>
-            </ul>
-          </div>
-          <div className="container footer-col">
-            <h3>Top Destinations</h3>
-            <ul>
-              <li><a href="#">Paris, France</a></li>
-              <li><a href="#">Bali, Indonesia</a></li>
-              <li><a href="#">Kyoto, Japan</a></li>
-              <li><a href="#">New York, USA</a></li>
-            </ul>
-          </div>
-          <div className="container footer-col">
-            <h3>Newsletter</h3>
-            <p>Subscribe to get our weekly travel guides and exclusive members-only deals.</p>
-            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}>
-              <input type="email" placeholder="Your Email Address" required />
-              <button type="submit">Join</button>
-            </form>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
-          <p>Terms of Service &bull; Privacy Policy</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

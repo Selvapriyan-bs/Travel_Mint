@@ -1,0 +1,167 @@
+/* ==========================================================================
+   Contact Page Styles
+   ========================================================================== */
+
+/* ─── CONTACT FORM CARD ──────────────────────────────────────────────── */
+.contact-form-section .form-group-custom label {
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.contact-form-section input,
+.contact-form-section textarea {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--surface-alt);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.contact-form-section input:focus,
+.contact-form-section textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.contact-form-section textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ─── SUCCESS STATE ──────────────────────────────────────────────────── */
+.contact-success {
+  text-align: center;
+  padding: 40px 20px;
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.contact-success h3 {
+  color: #22c55e;
+  margin-bottom: 8px;
+}
+
+/* ─── INFO CARD ──────────────────────────────────────────────────────── */
+.contact-info-item {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.contact-icon-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--primary-glow);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-info-item h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+}
+
+.contact-info-item p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── MAP ────────────────────────────────────────────────────────────── */
+.contact-map {
+  height: 230px;
+  position: relative;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.contact-map-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.contact-map-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
+
+.contact-map-content h4 {
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  margin-top: 8px;
+}
+
+.contact-map-content p {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.contact-map-link {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+/* ─── FAQ SECTION ────────────────────────────────────────────────────── */
+.contact-faq-item {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.contact-faq-btn {
+  width: 100%;
+  padding: 18px 24px;
+  background: none;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.contact-faq-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.contact-faq-answer {
+  padding: 0 24px 24px 24px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  animation: fadeIn 0.3s ease;
+}
+
+.img_toggle {
+  transition: transform 0.3s ease;
+}
+
+.img_toggle.rotated {
+  transform: rotate(180deg);
+}

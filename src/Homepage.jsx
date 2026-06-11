@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+import Navbar from './Components/Navbar';
+import Footer from './Components/Footer';
 
 export default function Homepage() {
+  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [packages, setPackages] = useState([]);
 
-  // Login input states
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [role,setRole]=useState("");
-  // Safely parse local storage registration data and establish the active logged-in user state
   const [user, setUser] = useState(() => {
     try {
       const registrationData = localStorage.getItem('RegistrationData');
       if (registrationData) {
         const parsedData = JSON.parse(registrationData);
-        // Fallback to extraction from email if name wasn't explicitly saved
         return {
           name: parsedData.name || parsedData.email.split('@')[0],
-          email: parsedData.email, 
-          role:parsedData.role || 'user',
+          email: parsedData.email,
+          role: parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -31,16 +31,10 @@ export default function Homepage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 50);
     };
-
     window.addEventListener('scroll', handleScroll);
 
-    // Dynamically load Lucide CDN script to initialize the icons
     const loadLucide = () => {
       if (window.lucide) {
         window.lucide.createIcons();
@@ -49,9 +43,7 @@ export default function Homepage() {
         script.src = 'https://unpkg.com/lucide@latest';
         script.async = true;
         script.onload = () => {
-          if (window.lucide) {
-            window.lucide.createIcons();
-          }
+          if (window.lucide) window.lucide.createIcons();
         };
         document.body.appendChild(script);
       }
@@ -63,88 +55,78 @@ export default function Homepage() {
     };
   }, []);
 
-  // Re-run createIcons when state changes (e.g. mobile menu toggle, user login toggle)
   useEffect(() => {
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-  }, [menuOpen, user]);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("https://trip-agent-backend.onrender.com/api/package");
+        if (response) {
+          let incomingData = response.data;
+          if (!Array.isArray(incomingData) && typeof incomingData === 'object') {
+            incomingData = incomingData.package || incomingData.packages || incomingData.data || [];
+          }
+          if (Array.isArray(incomingData)) setPackages(incomingData);
+        }
+      } catch (err) {
+        console.error("API error:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (window.lucide) window.lucide.createIcons();
+  }, [menuOpen, user, packages]);
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('RegistrationData');
-    // sessionStorage.removeItem('RegistrationData');
   };
 
-  // Helper variable to pull the starting letter cleanly
-  const initialLetter = user && user.name ? user.name.charAt(0).toUpperCase() : "";
+  const trending = packages.slice(0, 3);
+  const [timeLeft, setTimeLeft] = useState({ days: 7, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    const target = new Date();
+    target.setDate(target.getDate() + 7);
+    const tick = () => {
+      const diff = target - new Date();
+      if (diff <= 0) return;
+      setTimeLeft({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const blogPreviews = [
+    { id: 1, title: "10 Hidden Gems in Paris Only Locals Know About", category: "Guides", date: "June 2, 2026", summary: "Skip the long lines at the Eiffel Tower and explore these quiet secret courtyards and rooftop view bistros.", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=400&q=80" },
+    { id: 2, title: "Bali Foodie Guide: Where to Find the Best Local Eats", category: "Dining", date: "May 28, 2026", summary: "From beachside seafood grills in Jimbaran to organic vegan cafés in Ubud, discover the essential culinary spots of Bali.", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=400&q=80" },
+    { id: 3, title: "Kyoto Etiquette: Cultural Mistakes to Avoid as a First-Timer", category: "Culture", date: "May 15, 2026", summary: "Understand bowing customs, temple photography rules, and Ryokan dining manners for a respectful trip to Japan.", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=400&q=80" },
+  ];
+
+  const [liveBookings] = useState([
+    { name: "Arjun", dest: "Bali", ago: "12 min ago" },
+    { name: "Priya", dest: "Paris", ago: "28 min ago" },
+    { name: "Rahul", dest: "Kyoto", ago: "1 hour ago" },
+    { name: "Ananya", dest: "Swiss Alps", ago: "2 hours ago" },
+    { name: "Vikram", dest: "New York", ago: "3 hours ago" },
+  ]);
 
   return (
     <div>
       <link rel="stylesheet" href="App.css" />
       <title>TripAgent — Explore the World with Confidence</title>
-      <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
-        <div className="container nav">
-          <Link to="/" className="logo">
-            <i data-lucide="compass"></i> Trip<span>Agent</span>
-          </Link>
-
-          <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
-            <li><Link to="/" className="active">Home</Link></li>
-            <li><Link to="/destination">Destinations</Link></li>
-            <li><Link to="/search">Search</Link></li>
-            <li><Link to="/booking">Booking</Link></li>
-            <li><Link to="/blog">Blog</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            {user && user.role === "admin" ? (
-              <li>
-                <Link to="/admin">Admin Dashboard</Link>
-              </li>
-            ) : null}
-            {/* Conditional Authentication Menu Items */}
-            {user ? (
-              <li className="mobile-only-user">
-                <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
-                <button onClick={handleLogout} className="btn-logout-link">Logout</button>
-              </li>
-            ) : (
-              <li><Link to="/Login">Login</Link></li>
-            )}
-          </ul>
-
-          <div className="nav-cta">
-            <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
-          </div>
-
-          {/* Desktop Logged-in Banner using Starting Letter Profile Icon */}
-          {user && (
-            <div className="user-profile-banner">
-              <div className="user-text-avatar">
-                {initialLetter}
-              </div>
-              <div className="user-info-dropdown">
-                <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-                <span className="user-email-sub">{user.email}</span>
-                <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-              </div>
-            </div>
-          )}
-          <div
-            className={`nav-toggle ${menuOpen ? 'active' : ''}`}
-            id="nav-toggle"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </header>
+      <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="home" />
 
       {/* Hero Section */}
       <section className="hero">
-        <div className="hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80')" }}></div>
+        <video className="hero-video" autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80">
+          <source src="/homepage_vid.mp4" type="video/mp4" />
+        </video>
         <div className="hero-overlay"></div>
         <div className="container hero-content animate-fade-in">
           <h1 className="font-serif">Explore the World <br />With Confidence</h1>
@@ -153,122 +135,161 @@ export default function Homepage() {
         </div>
       </section>
 
-      {/* Floating Search Widget */}
-      <div className="container">
-        <div className="search-widget animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <form action="search.html" method="GET">
-            <div className="form-group-custom">
-              <label><i data-lucide="map-pin"></i> Where to?</label>
-              <div className="input-with-icon">
-                <i data-lucide="search"></i>
-                <select name="destination" required defaultValue="">
-                  <option value="" disabled>Search destination...</option>
-                  <option value="paris">Paris, France</option>
-                  <option value="bali">Bali, Indonesia</option>
-                  <option value="kyoto">Kyoto, Japan</option>
-                  <option value="newyork">New York, USA</option>
-                  <option value="sydney">Sydney, Australia</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-group-custom">
-              <label><i data-lucide="calendar"></i> When?</label>
-              <div className="input-with-icon">
-                <i data-lucide="calendar-days"></i>
-                <input type="date" name="departure" required />
-              </div>
-            </div>
-            <div className="form-group-custom">
-              <label><i data-lucide="users"></i> Travel Type</label>
-              <div className="input-with-icon">
-                <i data-lucide="user-check"></i>
-                <select name="type" defaultValue="family">
-                  <option value="solo">Solo Traveler</option>
-                  <option value="couple">Couple</option>
-                  <option value="family">Family Vacation</option>
-                  <option value="group">Group Adventure</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <button type="submit" className="btn-submit">
-                <i data-lucide="search"></i> Search
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
       <main>
-        {/* Featured Destinations Section */}
+        {/* Stats Counter */}
+        <section className="section" style={{ backgroundColor: 'var(--surface-alt)', paddingTop: '50px', paddingBottom: '50px' }}>
+          <div className="container">
+            <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '24px', textAlign: 'center' }}>
+              <div className="feature-block" style={{ padding: '24px 16px' }}>
+                <i data-lucide="users" style={{ width: '36px', height: '36px', color: 'var(--primary)', marginBottom: '8px' }}></i>
+                <h3 style={{ fontSize: '2rem', color: 'var(--primary)', margin: '4px 0' }}>10,000+</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Happy Travelers</p>
+              </div>
+              <div className="feature-block" style={{ padding: '24px 16px' }}>
+                <i data-lucide="map" style={{ width: '36px', height: '36px', color: 'var(--primary)', marginBottom: '8px' }}></i>
+                <h3 style={{ fontSize: '2rem', color: 'var(--primary)', margin: '4px 0' }}>50+</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Destinations</p>
+              </div>
+              <div className="feature-block" style={{ padding: '24px 16px' }}>
+                <i data-lucide="star" style={{ width: '36px', height: '36px', color: 'var(--primary)', marginBottom: '8px' }}></i>
+                <h3 style={{ fontSize: '2rem', color: 'var(--primary)', margin: '4px 0' }}>4.9★</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Average Rating</p>
+              </div>
+              <div className="feature-block" style={{ padding: '24px 16px' }}>
+                <i data-lucide="award" style={{ width: '36px', height: '36px', color: 'var(--primary)', marginBottom: '8px' }}></i>
+                <h3 style={{ fontSize: '2rem', color: 'var(--primary)', margin: '4px 0' }}>12+</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Years Experience</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Seasonal Spotlight Banner */}
+        <section className="section container" style={{ paddingTop: '30px', paddingBottom: '10px' }}>
+          <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', borderRadius: 'var(--radius-md)', padding: '40px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
+            <div>
+              <span style={{ background: 'var(--primary)', color: '#fff', padding: '4px 14px', borderRadius: 'var(--radius-pill)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Summer Sale</span>
+              <h2 style={{ color: '#fff', fontSize: '1.8rem', margin: '12px 0 6px' }}>Up to 30% Off on Summer Escapes</h2>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', margin: 0 }}>Book your dream vacation before the early-bird offers end. Limited spots available.</p>
+            </div>
+            <Link to="/search" className="btn btn-primary btn-lg" style={{ whiteSpace: 'nowrap' }}>View Deals <i data-lucide="arrow-right"></i></Link>
+          </div>
+        </section>
+
+        {/* Trending Destinations */}
         <section className="section container" id="popular-destinations">
           <div className="section-header">
             <h2>Trending Destinations</h2>
             <p>Hand-picked global spots that are currently trending among our premium club members.</p>
           </div>
           <div className="grid-3">
-            {/* Destination 1 */}
-            <div className="card-premium">
-              <div className="card-badge-left">Featured</div>
-              <div className="card-badge"><i data-lucide="clock"></i> 6 Days</div>
-              <div className="card-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80" alt="Paris, France" />
-              </div>
-              <div className="card-premium-content">
-                <div className="card-meta">
-                  <span><i data-lucide="map-pin"></i> France</span>
-                  <span><i data-lucide="star"></i> 4.9 (1.2k reviews)</span>
+            {trending.map(pkg => (
+              <div className="card-premium" key={pkg.id}>
+                {pkg.badge && <div className="card-badge-left">{pkg.badge}</div>}
+                <div className="card-badge"><i data-lucide="clock"></i> {pkg.days} Days</div>
+                <div className="card-img-wrapper">
+                  <img src={pkg.image} alt={pkg.destination} />
                 </div>
-                <h3>Paris, France</h3>
-                <p>Experience the romantic city of lights, world-class art at the Louvre, café culture, and the iconic Eiffel Tower views.</p>
-                <div className="card-footer">
-                  <div className="card-price">&#8377;10,299<span>/ person</span></div>
-                  <Link to="/booking?destination=paris" className="btn btn-outline btn-sm">Book Trip</Link>
+                <div className="card-premium-content">
+                  <div className="card-meta">
+                    <span><i data-lucide="map-pin"></i> {pkg.country}</span>
+                    <span><i data-lucide="star"></i> {pkg.rating} ({pkg.reviews} reviews)</span>
+                  </div>
+                  <h3>{pkg.title || pkg.destination}</h3>
+                  <p>{pkg.description}</p>
+                  <div className="card-footer">
+                    <div className="card-price">&#8377;{(pkg.price ?? 0).toLocaleString()} <span>/ person</span></div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <Link to={`/package/${pkg._id || pkg.id}`} className="btn btn-outline btn-sm">Details</Link>
+                      <Link to={`/package/${pkg._id || pkg.id}`} className="btn btn-outline btn-sm">Book Trip</Link>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
+            {trending.length === 0 && (
+              <div style={{ gridColumn: 'span 3', textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                <i data-lucide="frown" style={{ width: '48px', height: '48px', marginBottom: '16px', color: 'var(--text-muted)' }}></i>
+                <p>No trending destinations available right now.</p>
+              </div>
+            )}
+          </div>
+        </section>
 
-            {/* Destination 2 */}
-            <div className="card-premium">
-              <div className="card-badge-left">Best Seller</div>
-              <div className="card-badge"><i data-lucide="clock"></i> 8 Days</div>
-              <div className="card-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80" alt="Bali, Indonesia" />
-              </div>
-              <div className="card-premium-content">
-                <div className="card-meta">
-                  <span><i data-lucide="map-pin"></i> Indonesia</span>
-                  <span><i data-lucide="star"></i> 4.85 (940 reviews)</span>
-                </div>
-                <h3>Bali, Indonesia</h3>
-                <p>Indulge in spiritual temples, lush emerald rice terraces, pristine beaches, and luxurious oceanfront resorts.</p>
-                <div className="card-footer">
-                  <div className="card-price">&#8377;9,490 <span>/ person</span></div>
-                  <Link to="/booking?destination=bali" className="btn btn-outline btn-sm">Book Trip</Link>
-                </div>
-              </div>
+        {/* Travel Categories Grid */}
+        <section className="section" style={{ backgroundColor: 'var(--surface-alt)' }}>
+          <div className="container">
+            <div className="section-header">
+              <h2>Find Your Travel Style</h2>
+              <p>Whether you crave adventure, luxury, solitude, or family fun — we have the perfect trip for you.</p>
             </div>
+            <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px' }}>
+              {[
+                { icon: 'mountain', title: 'Adventure', desc: 'Hike, dive, and explore off-the-beaten-path with expert guides.', link: '/search?region=Adventure' },
+                { icon: 'gem', title: 'Luxury', desc: 'Five-star resorts, private transfers, and curated fine-dining experiences.', link: '/search?region=Luxury' },
+                { icon: 'user', title: 'Solo Travel', desc: 'Empowering solo journeys with safe accommodations and local buddies.', link: '/search?region=Solo' },
+                { icon: 'heart', title: 'Family Getaways', desc: 'Kid-friendly itineraries with activities, fun zones, and relaxation.', link: '/search?region=Family' },
+              ].map((cat, i) => (
+                <Link to={cat.link} key={i} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div className="feature-block" style={{ textAlign: 'center', padding: '32px 20px', cursor: 'pointer', transition: 'transform 0.2s', borderRadius: 'var(--radius-md)' }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <div className="feature-icon-wrapper" style={{ margin: '0 auto 16px' }}>
+                      <i data-lucide={cat.icon}></i>
+                    </div>
+                    <h3>{cat.title}</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>{cat.desc}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
 
-            {/* Destination 3 */}
-            <div className="card-premium">
-              <div className="card-badge-left">Recommended</div>
-              <div className="card-badge"><i data-lucide="clock"></i> 7 Days</div>
-              <div className="card-img-wrapper">
-                <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80" alt="Kyoto, Japan" />
+        {/* Special Deals with Countdown */}
+        <section className="section container">
+          <div className="section-header">
+            <h2>Limited Time Deals</h2>
+            <p>Grab these exclusive offers before they expire. Hand-picked for maximum value.</p>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' }}>
+            {[
+              { label: 'Days', value: timeLeft.days },
+              { label: 'Hours', value: timeLeft.hours },
+              { label: 'Minutes', value: timeLeft.minutes },
+              { label: 'Seconds', value: timeLeft.seconds },
+            ].map((unit, i) => (
+              <div key={i} style={{ background: 'var(--surface-alt)', borderRadius: 'var(--radius-sm)', padding: '12px 24px', textAlign: 'center', minWidth: '88px' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)', lineHeight: 1 }}>{String(unit.value).padStart(2, '0')}</div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{unit.label}</div>
               </div>
-              <div className="card-premium-content">
-                <div className="card-meta">
-                  <span><i data-lucide="map-pin"></i> Japan</span>
-                  <span><i data-lucide="star"></i> 4.92 (810 reviews)</span>
+            ))}
+          </div>
+          <div className="grid-3">
+            {packages.slice(3, 6).map(pkg => (
+              <div className="card-premium" key={pkg.id}>
+                <div className="card-badge-left" style={{ background: 'var(--primary)' }}>Limited Offer</div>
+                <div className="card-badge"><i data-lucide="clock"></i> {pkg.days} Days</div>
+                <div className="card-img-wrapper">
+                  <img src={pkg.image} alt={pkg.destination} />
                 </div>
-                <h3>Kyoto, Japan</h3>
-                <p>Step back in time through historic wooden temples, quiet bamboo groves, colorful shrines, and traditional tea ceremonies.</p>
-                <div className="card-footer">
-                  <div className="card-price">&#8377;14,500 <span>/ person</span></div>
-                  <Link to="/booking?destination=kyoto" className="btn btn-outline btn-sm">Book Trip</Link>
+                <div className="card-premium-content">
+                  <div className="card-meta">
+                    <span><i data-lucide="map-pin"></i> {pkg.country}</span>
+                    <span><i data-lucide="star"></i> {pkg.rating} ({pkg.reviews} reviews)</span>
+                  </div>
+                  <h3>{pkg.title || pkg.destination}</h3>
+                  <p>{pkg.description}</p>
+                  <div className="card-footer">
+                    <div className="card-price">&#8377;{(pkg.price ?? 0).toLocaleString()} <span>/ person</span></div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <Link to={`/package/${pkg._id || pkg.id}`} className="btn btn-outline btn-sm">Details</Link>
+                      <Link to={`/package/${pkg._id || pkg.id}`} className="btn btn-primary btn-sm">Grab Deal</Link>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         </section>
 
@@ -305,6 +326,21 @@ export default function Homepage() {
           </div>
         </section>
 
+        {/* Trusted Partners */}
+        <section className="section container" style={{ paddingTop: '30px', paddingBottom: '10px' }}>
+          <div className="section-header">
+            <h2>Trusted Partners</h2>
+            <p>We work with the world's leading travel brands to deliver excellence.</p>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', flexWrap: 'wrap', opacity: 0.6 }}>
+            {['Emirates', 'Qatar Airways', 'Marriott', 'Hilton', 'Booking.com', 'Delta'].map((brand, i) => (
+              <div key={i} style={{ background: 'var(--surface-alt)', padding: '16px 28px', borderRadius: 'var(--radius-sm)', fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-muted)', letterSpacing: '0.5px', border: '1px solid var(--border-color)' }}>
+                {brand}
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Testimonials Section */}
         <section className="section container">
           <div className="section-header">
@@ -315,11 +351,11 @@ export default function Homepage() {
             <div className="testimonial-card">
               <span className="quote-icon">“</span>
               <div className="testimonial-rating">
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
               </div>
               <p className="testimonial-text">"Our trip to Kyoto was flawless! The hotel was stunning, and the private guides recommended by TripAgent were extremely knowledgeable. Highly recommend!"</p>
               <div className="testimonial-user">
@@ -334,11 +370,11 @@ export default function Homepage() {
             <div className="testimonial-card">
               <span className="quote-icon">“</span>
               <div className="testimonial-rating">
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
               </div>
               <p className="testimonial-text">"Booking through TripAgent was incredibly smooth. They handled flights, local transport, and hotels. The customer support answered our questions in minutes."</p>
               <div className="testimonial-user">
@@ -353,11 +389,11 @@ export default function Homepage() {
             <div className="testimonial-card">
               <span className="quote-icon">“</span>
               <div className="testimonial-rating">
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
-                <i data-lucide="star"></i>
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
+                <FontAwesomeIcon icon={faStar} />
               </div>
               <p className="testimonial-text">"Perfect itinerary! Paris is beautiful but having everything planned out took away all the stress. We will definitely book our next summer trip here!"</p>
               <div className="testimonial-user">
@@ -370,55 +406,44 @@ export default function Homepage() {
             </div>
           </div>
         </section>
-      </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-col">
-            <Link to="/" className="footer-logo">
-              <i data-lucide="compass"></i> Trip<span>Agent</span>
-            </Link>
-            <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
-            <div className="social-links">
-              <a href="#"><i data-lucide="facebook"></i></a>
-              <a href="#"><i data-lucide="instagram"></i></a>
-              <a href="#"><i data-lucide="twitter"></i></a>
-              <a href="#"><i data-lucide="youtube"></i></a>
+        {/* Blog Preview */}
+        <section className="section" style={{ backgroundColor: 'var(--surface-alt)' }}>
+          <div className="container">
+            <div className="section-header">
+              <h2>Latest from Our Blog</h2>
+              <p>Travel tips, destination guides, and cultural insights from our global team.</p>
+            </div>
+            <div className="grid-3">
+              {blogPreviews.map(post => (
+                <div className="card-premium" key={post.id} style={{ display: 'flex', flexDirection: 'column', height: '400px', justifyContent: 'space-between' }}>
+                  <div>
+                    <div className="card-img-wrapper" style={{ height: '180px' }}>
+                      <img src={post.image} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ padding: '20px 20px 30px 20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '8px' }}>
+                        <span style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{post.category}</span>
+                        <span>{post.date}</span>
+                      </div>
+                      <h3 style={{ fontSize: '1.1rem', lineHeight: '1.4', marginBottom: '8px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{post.title}</h3>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>{post.summary}</p>
+                    </div>
+                  </div>
+                  <div style={{ padding: '20px 20px 30px 20px' }}>
+                    <Link to="/blog" className="btn btn-outline btn-sm" style={{ width: '100%' }}>Read More</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+              <Link to="/blog" className="btn btn-primary">View All Articles <i data-lucide="arrow-right"></i></Link>
             </div>
           </div>
-          <div className="footer-col">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/destination">Destinations</Link></li>
-              <li><Link to="/search">Search</Link></li>
-              <li><Link to="/booking">Booking</Link></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Top Destinations</h3>
-            <ul>
-              <li><a href="#">Paris, France</a></li>
-              <li><a href="#">Bali, Indonesia</a></li>
-              <li><a href="#">Kyoto, Japan</a></li>
-              <li><a href="#">New York, USA</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Newsletter</h3>
-            <p>Subscribe to get our weekly travel guides and exclusive members-only deals.</p>
-            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}>
-              <input type="email" placeholder="Your Email Address" required />
-              <button type="submit">Join</button>
-            </form>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
-          <p>Terms of Service &bull; Privacy Policy</p>
-        </div>
-      </footer>
+        </section>
+      </main>
+
+      <Footer />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom'; // IMPORT PORTAL MECHANISM
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import "./Assets/Css/Admin.css"
 import axios from 'axios';
+import { useSnackbar } from './Components/SnackbarProvider';
 import {
   Compass,
   LayoutDashboard,
@@ -20,7 +21,13 @@ import {
   DollarSign,
   Clock,
   ArrowRight,
-  X
+  X,
+  Pencil,
+  Trash2,
+  Star,
+  Mail,
+  Phone,
+  LogOut
 } from 'lucide-react';
 
 const fallbackAdminDestinations = [
@@ -28,6 +35,8 @@ const fallbackAdminDestinations = [
 ];
 
 export default function Admin() {
+  const navigate = useNavigate();
+  const showSnackbar = useSnackbar();
   const [activeView, setActiveView] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -64,11 +73,107 @@ export default function Admin() {
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
 
-  const [bookings] = useState([
-    { id: "BK-1042", customer: "Alice Johnson", email: "alice@example.com", destination: "Paris, France", dates: "Oct 12 - Oct 18", pax: 2, total: "67,598", status: "approved", date: "2026-05-28" },
-    { id: "BK-1041", customer: "John Doe", email: "john@example.com", destination: "Tokyo, Japan", dates: "Nov 05 - Nov 12", pax: 1, total: "54,850", status: "pending", date: "2026-05-30" },
-    { id: "BK-1040", customer: "Sarah Smith", email: "sarah@example.com", destination: "Bali, Indonesia", dates: "Dec 01 - Dec 10", pax: 4, total: "56,200", status: "completed", date: "2026-05-25" },
-  ]);
+  const [blogs, setBlogs] = useState([]);
+  const [blogLoading, setBlogLoading] = useState(true);
+  const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+  const [blogForm, setBlogForm] = useState({
+    title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: ''
+  });
+  const [blogSubmitting, setBlogSubmitting] = useState(false);
+
+  const fetchBlogs = async () => {
+    setBlogLoading(true);
+    try {
+      const response = await axios.get("https://trip-agent-backend.onrender.com/api/blog");
+      if (response && response.data) {
+        let data = response.data;
+        if (!Array.isArray(data) && typeof data === 'object') data = data.data || data.blogs || [];
+        if (Array.isArray(data)) setBlogs(data);
+      }
+    } catch (err) {
+      console.error("Error fetching blogs:", err);
+    } finally {
+      setBlogLoading(false);
+    }
+  };
+
+  const [bookings, setBookings] = useState([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingFilter, setBookingFilter] = useState("all");
+  const [bookingSearch, setBookingSearch] = useState("");
+
+  const fetchBookings = async () => {
+    setBookingLoading(true);
+    try {
+      const response = await axios.get("https://trip-agent-backend.onrender.com/api/booking");
+      if (response && response.data) {
+        let data = response.data;
+        if (!Array.isArray(data) && typeof data === "object") data = data.data || data.bookings || [];
+        if (Array.isArray(data)) setBookings(data);
+      }
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      setBookings([]);
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const handleDeletePackage = async (id) => {
+    if (!window.confirm("Delete this destination package?")) return;
+    try {
+      await axios.delete(`https://trip-agent-backend.onrender.com/api/package/${id}`);
+      fetchDestinations();
+    } catch (err) {
+      showSnackbar(err.response?.data?.message || "Failed to delete package", "error");
+    }
+  };
+
+  const handleDeleteBlog = async (id) => {
+    if (!window.confirm("Delete this blog post?")) return;
+    try {
+      await axios.delete(`https://trip-agent-backend.onrender.com/api/blog/${id}`);
+      fetchBlogs();
+    } catch (err) {
+      showSnackbar(err.response?.data?.message || "Failed to delete blog post", "error");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('RegistrationData');
+    navigate('/login');
+  };
+
+  const filteredBookings = bookings.filter(b => {
+    const matchesFilter = bookingFilter === "all" || b.status === bookingFilter;
+    const q = bookingSearch.toLowerCase();
+    const matchesSearch = !q ||
+      (b.customer || b.name || "").toLowerCase().includes(q) ||
+      (b.destination || "").toLowerCase().includes(q) ||
+      (b.email || "").toLowerCase().includes(q);
+    return matchesFilter && matchesSearch;
+  });
+
+  const totalBookings = bookings.length;
+  const totalRevenue = bookings.reduce((sum, b) => sum + (Number(String(b.total || b.price || 0).replace(/,/g, '')) || 0), 0);
+  const bookedCount = bookings.filter(b => b.status === 'booked').length;
+  const doneCount = bookings.filter(b => b.status === 'done').length;
+  const completionRate = totalBookings > 0 ? Math.round((doneCount / totalBookings) * 100) : 0;
+
+  const [contactMessages, setContactMessages] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('contactMessages') || '[]'); }
+    catch { return []; }
+  });
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [phoneRevealed, setPhoneRevealed] = useState(null);
+  const unreadContactCount = contactMessages.filter(m => !m.read).length;
+  const avgRevenue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0;
+  const pendingPercent = totalBookings > 0 ? Math.round((bookedCount / totalBookings) * 100) : 0;
 
   const fetchDestinations = async () => {
     setDestLoading(true);
@@ -119,7 +224,7 @@ export default function Admin() {
   const handleAddDestinationSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.price) {
-      alert("Title and Price are required fields.");
+      showSnackbar("Title and Price are required fields.", "warning");
       return;
     }
 
@@ -140,7 +245,7 @@ export default function Admin() {
       });
 
       if (response.status === 201 || response.data) {
-        alert("Destination Package added successfully!");
+          showSnackbar("Destination Package added successfully!", "success");
         setIsModalOpen(false);
         setFormData({
           title: '', destination: '', region: '', country: '',
@@ -151,13 +256,11 @@ export default function Admin() {
       }
     } catch (error) {
       console.error("Error creating new destination item:", error);
-      alert(error.response?.data?.message || "Submission failed.");
+      showSnackbar(error.response?.data?.message || "Submission failed.", "error");
     } finally {
       setFormSubmitting(false);
     }
   };
-
-  const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   return (
     <div className={`admin-shell ${isSidebarOpen ? 'sidebar-open' : ''}`}>
@@ -177,14 +280,26 @@ export default function Admin() {
           </div>
           <div className={`nav-item ${activeView === 'bookings' ? 'active' : ''}`} onClick={() => setActiveView('bookings')}>
             <CalendarCheck size={18} /> Bookings
-            {pendingCount > 0 && <span className="nav-badge">{pendingCount}</span>}
+            {bookedCount > 0 && <span className="nav-badge">{bookedCount}</span>}
           </div>
           <div className={`nav-item ${activeView === 'destinations' ? 'active' : ''}`} onClick={() => { setActiveView('destinations'); fetchDestinations(); }}>
             <MapPin size={18} /> Destinations
           </div>
+          <div className={`nav-item ${activeView === 'blogs' ? 'active' : ''}`} onClick={() => { setActiveView('blogs'); fetchBlogs(); }}>
+            <MapPin size={18} /> Blog Posts
+          </div>
+          <div className={`nav-item ${activeView === 'messages' ? 'active' : ''}`} onClick={() => setActiveView('messages')}>
+            <Bell size={18} /> Messages
+            {unreadContactCount > 0 && <span className="nav-badge">{unreadContactCount}</span>}
+          </div>
           <p className="nav-section-title">System</p>
           <Link to="/" className="nav-item" target="_blank" rel="noreferrer">
             <ExternalLink size={18} /> View Website
+          </Link>
+           <Link to="/">
+          <div className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+            <LogOut size={18} /> Logout
+          </div>
           </Link>
         </nav>
 
@@ -215,7 +330,7 @@ export default function Admin() {
           <div className="topbar-right">
             <button className="topbar-btn" title="Notifications">
               <Bell size={18} />
-              <span className="notif-dot"></span>
+              {(bookedCount > 0 || unreadContactCount > 0) && <span className="notif-dot"></span>}
             </button>
             <button className="topbar-btn" title="Refresh" onClick={() => fetchDestinations()}>
               <RefreshCw size={18} />
@@ -242,23 +357,25 @@ export default function Admin() {
                 <div className="stat-card blue">
                   <div className="stat-card-header">
                     <div className="stat-icon blue"><CalendarCheck size={20} /></div>
-                    <div className="stat-trend up"><TrendingUp size={14} /> +12%</div>
+                    <div className={`stat-trend ${completionRate >= 50 ? 'up' : 'down'}`}>
+                      {completionRate >= 50 ? <TrendingUp size={14} /> : <TrendingDown size={14} />} {completionRate}% completed
+                    </div>
                   </div>
-                  <div className="stat-value">{bookings.length}</div>
+                  <div className="stat-value">{bookingLoading ? "..." : totalBookings}</div>
                   <div className="stat-label">Total Bookings</div>
                 </div>
                 <div className="stat-card green">
                   <div className="stat-card-header">
                     <div className="stat-icon green"><DollarSign size={20} /></div>
-                    <div className="stat-trend up"><TrendingUp size={14} /> +8.4%</div>
+                    <div className="stat-trend up"><TrendingUp size={14} /> avg &#8377;{avgRevenue.toLocaleString()}</div>
                   </div>
-                  <div className="stat-value">&#8377;7,648</div>
+                  <div className="stat-value">&#8377;{totalRevenue.toLocaleString()}</div>
                   <div className="stat-label">Est. Revenue</div>
                 </div>
                 <div className="stat-card orange">
                   <div className="stat-card-header">
                     <div className="stat-icon orange"><MapPin size={20} /></div>
-                    <div className="stat-trend up"><TrendingUp size={14} /> Live</div>
+                    <div className="stat-trend up"><TrendingUp size={14} /> {destLoading ? "..." : "Active"}</div>
                   </div>
                   <div className="stat-value">{destLoading ? "..." : destinations.length}</div>
                   <div className="stat-label">Active Destinations</div>
@@ -266,10 +383,12 @@ export default function Admin() {
                 <div className="stat-card purple">
                   <div className="stat-card-header">
                     <div className="stat-icon purple"><Clock size={20} /></div>
-                    <div className="stat-trend down"><TrendingDown size={14} /> -3</div>
+                    <div className={`stat-trend ${pendingPercent <= 20 ? 'up' : 'down'}`}>
+                      {pendingPercent <= 20 ? <TrendingUp size={14} /> : <TrendingDown size={14} />} {pendingPercent}% of total
+                    </div>
                   </div>
-                  <div className="stat-value">{pendingCount}</div>
-                  <div className="stat-label">Pending Requests</div>
+                  <div className="stat-value">{bookingLoading ? "..." : bookedCount}</div>
+                  <div className="stat-label">New Bookings</div>
                 </div>
               </div>
 
@@ -296,14 +415,16 @@ export default function Admin() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookings.slice(0, 3).map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.customer}</td>
-                          <td>{item.destination}</td>
-                          <td>{item.pax}</td>
-                          <td>&#8377;{item.total}</td>
-                          <td><span className={`badge status-${item.status}`}>{item.status}</span></td>
-                          <td>{item.date}</td>
+                      {bookingLoading ? (
+                        <tr><td colSpan="6" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>Loading bookings...</td></tr>
+                      ) : filteredBookings.slice(0, 3).map((item) => (
+                        <tr key={item._id || item.id}>
+                          <td>{item.customer || item.name || "—"}</td>
+                          <td>{item.destination || "—"}</td>
+                          <td>{item.pax || item.guests || 1}</td>
+                          <td>&#8377;{Number(item.total || item.price || 0).toLocaleString()}</td>
+                          <td><span className={`badge status-${item.status}`}>{item.status === 'on-trip' ? 'On Trip' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}</span></td>
+                          <td>{item.date || item.createdAt?.slice(0, 10) || "—"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -322,27 +443,32 @@ export default function Admin() {
                 </div>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <span className="badge status-pending" style={{ padding: '6px 12px', borderRadius: '20px' }}>
-                    {pendingCount} Awaiting Review
+                    {bookedCount} Awaiting Action
                   </span>
                 </div>
               </div>
 
               {/* Filter Controls Bar */}
-              <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', gap: '16px' }}>
+              <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
                 <div className="search-input-wrapper" style={{ flex: 1, maxWidth: '400px' }}>
                   <input
                     type="text"
                     placeholder="Search customer or destination..."
                     className="search-input"
+                    value={bookingSearch}
+                    onChange={(e) => setBookingSearch(e.target.value)}
                     style={{ width: '100%', boxSizing: 'border-box' }}
                   />
                 </div>
-                <select className="filter-select" style={{ minWidth: '160px' }}>
-                  <option value="all">All Bookings</option>
-                  <option value="pending">Awaiting Action</option>
-                  <option value="approved">Approved</option>
-                  <option value="completed">Completed</option>
-                </select>
+                <div className="filter-tabs">
+                  {['all', 'booked', 'contacted', 'on-trip', 'done'].map(s => (
+                    <button key={s} onClick={() => setBookingFilter(s)}
+                      className={`filter-tab ${bookingFilter === s ? 'active' : ''}`}
+                    >
+                      {s === 'all' ? 'All' : s === 'on-trip' ? 'On Trip' : s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Bookings Table Context Layout */}
@@ -362,41 +488,40 @@ export default function Admin() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookings.map((item) => (
-                        <tr key={item.id} style={{ background: item.status === 'pending' ? 'rgba(245, 158, 11, 0.03)' : 'transparent' }}>
-                          <td style={{ fontWeight: '600', color: 'var(--accent-color)' }}>{item.id}</td>
+                      {bookingLoading ? (
+                        <tr><td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading bookings...</td></tr>
+                      ) : filteredBookings.length === 0 ? (
+                        <tr><td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No bookings found.</td></tr>
+                      ) : filteredBookings.map((item) => (
+                        <tr key={item._id || item.id} style={{ background: item.status === 'pending' ? 'rgba(245, 158, 11, 0.03)' : 'transparent' }}>
+                          <td style={{ fontWeight: '600', color: 'var(--accent-color)' }}>{item._id?.slice(-6) || item.id || "—"}</td>
                           <td>
-                            <div style={{ fontWeight: '500' }}>{item.customer}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.email}</div>
+                            <div style={{ fontWeight: '500' }}>{item.customer || item.name || "—"}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.email || "—"}</div>
                           </td>
-                          <td>{item.destination}</td>
-                          <td>{item.dates}</td>
-                          <td>{item.pax} {item.pax === 1 ? 'Pax' : 'People'}</td>
-                          <td style={{ fontWeight: '600' }}>&#8377;{item.total}</td>
+                          <td>{item.destination || "—"}</td>
+                          <td>{item.dates || (item.departureDate ? `${item.departureDate?.slice(0,10)} - ${item.returnDate?.slice(0,10)}` : "—")}</td>
+                          <td>{item.pax || item.guests || 1} {(item.pax || item.guests || 1) === 1 ? 'Pax' : 'People'}</td>
+                          <td style={{ fontWeight: '600' }}>&#8377;{Number(item.total || item.price || 0).toLocaleString()}</td>
                           <td>
                             <span className={`badge status-${item.status}`}>
-                              {item.status === 'pending' ? '⏳ pending' : item.status}
+                              {item.status === 'on-trip' ? 'On Trip' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                             </span>
                           </td>
                           <td style={{ textAlign: 'right' }}>
-                            {item.status === 'pending' ? (
-                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                                <button
-                                  onClick={() => alert(`Approving ${item.id}`)}
-                                  style={{ padding: '6px 12px', background: 'var(--color-completed)', border: 'none', color: '#000', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer' }}
-                                >
-                                  Approve
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                              {['booked', 'contacted', 'on-trip', 'done'].map(status => (
+                                <button key={status} onClick={async () => {
+                                  if (item.status === status) return;
+                                  try {
+                                    await axios.put(`https://trip-agent-backend.onrender.com/api/booking/${item._id || item.id}`, { status });
+                                    fetchBookings();
+                                  } catch (err) { showSnackbar("Failed to update status", "error"); }
+                                }} className={`btn-status ${item.status === status ? 'active' : ''}`}>
+                                  {status === 'on-trip' ? 'On Trip' : status.charAt(0).toUpperCase() + status.slice(1)}
                                 </button>
-                                <button
-                                  onClick={() => alert(`Rejecting ${item.id}`)}
-                                  style={{ padding: '6px 12px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--color-cancelled)', color: 'var(--color-cancelled)', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>No actions required</span>
-                            )}
+                              ))}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -435,19 +560,227 @@ export default function Admin() {
               ) : (
                 <div className="dest-grid">
                   {destinations.map((dest) => (
-                    <div className="dest-card" key={dest.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
-                      <img src={dest.image} alt={dest.name} style={{ width: '100%', height: '160px', objectFit: 'cover' }} />
-                      <div style={{ padding: '16px' }}>
-                        <h3 style={{ margin: '0 0 4px 0', fontSize: '1.15rem' }}>{dest.name}</h3>
-                        <p style={{ fontSize: '0.8rem', color: '#aaa', marginBottom: '8px' }}>{dest.country}</p>
-                        <p style={{ fontSize: '0.85rem', color: '#ccc', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '38px' }}>{dest.desc}</p>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', alignItems: 'center' }}>
-                          <span><strong>&#8377;{Number(dest.price).toLocaleString()}</strong></span>
-                          {dest.badge && <span className="badge" style={{ background: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>{dest.badge}</span>}
+                    <div className="dest-admin-card" key={dest.id}>
+                      <div className="dest-img-wrap">
+                        <img src={dest.image} alt={dest.name} />
+                        <div className="dest-img-overlay"></div>
+                        <div className="dest-img-actions">
+                          <button className="dest-edit-btn" onClick={() => { setFormData({
+                            title: dest.name, destination: dest.name, country: dest.country,
+                            price: String(dest.price), description: dest.desc, image: dest.image,
+                            badge: dest.badge || 'New'
+                          }); setIsModalOpen(true); }}>
+                            <Pencil size={14} />
+                          </button>
+                          <button className="dest-delete-btn" onClick={() => handleDeletePackage(dest.id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        {dest.badge && <span className="dest-img-badge">{dest.badge}</span>}
+                      </div>
+                      <div className="dest-card-body">
+                        <div className="dest-card-meta">
+                          <span className="dest-country"><MapPin size={12} /> {dest.country}</span>
+                          {dest.rating && <span className="dest-rating"><Star size={12} fill="#f59e0b" /> {dest.rating}</span>}
+                        </div>
+                        <div className="dest-card-name">{dest.name}</div>
+                        <div className="dest-card-desc">{dest.desc}</div>
+                        <div className="dest-card-footer">
+                          <div className="dest-price">&#8377;{Number(dest.price).toLocaleString()}</div>
                         </div>
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeView === 'blogs' && (
+            <div className="view-panel active">
+              <div className="section-head">
+                <div>
+                  <h2>Blog Posts</h2>
+                  <p>Manage travel blog articles</p>
+                </div>
+                <button type="button" className="btn-add"
+                  onClick={() => {
+                    setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' });
+                    setIsBlogModalOpen(true);
+                  }}>
+                  <Plus size={18} /> Add Blog Post
+                </button>
+              </div>
+
+              {blogLoading ? (
+                <div style={{ padding: '60px 0', textAlign: 'center', color: '#888' }}>
+                  <p>Loading blog posts...</p>
+                </div>
+              ) : (
+                <div className="dest-grid">
+                  {blogs.map(blog => (
+                    <div className="dest-admin-card" key={blog._id || blog.id}>
+                      <div className="dest-img-wrap" style={{ paddingTop: '45%' }}>
+                        <img src={blog.image} alt={blog.title} />
+                        <div className="dest-img-overlay"></div>
+                        <div className="dest-img-actions">
+                          <button className="dest-edit-btn" onClick={() => { setBlogForm({
+                            title: blog.title, category: blog.category, readTime: blog.readTime || '',
+                            date: blog.date || '', summary: blog.summary || '', image: blog.image || '',
+                            featured: blog.featured || false, content: blog.content || ''
+                          }); setIsBlogModalOpen(true); }}>
+                            <Pencil size={14} />
+                          </button>
+                          <button className="dest-delete-btn" onClick={() => handleDeleteBlog(blog._id || blog.id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        {blog.featured && <span className="dest-img-badge" style={{ background: 'var(--primary)' }}>Featured</span>}
+                        {blog.category && <span className="dest-img-badge" style={{ left: 'auto', right: '12px', top: 'auto', bottom: '12px', background: 'rgba(255,255,255,0.15)' }}>{blog.category}</span>}
+                      </div>
+                      <div className="dest-card-body">
+                        <div className="dest-card-name" style={{ fontSize: '0.95rem' }}>{blog.title}</div>
+                        <div className="dest-card-desc">{blog.summary}</div>
+                        <div className="dest-card-footer" style={{ border: 'none', paddingTop: '8px' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{blog.date}</span>
+                          {blog.readTime && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{blog.readTime}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {blogs.length === 0 && (
+                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#888' }}>
+                      <p>No blog posts yet. Click "Add Blog Post" to create one.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeView === 'messages' && (
+            <div className="view-panel active">
+              <div className="panel-header">
+                <h3>Contact Messages</h3>
+                <div className="panel-actions">
+                  {selectMode ? (
+                    <>
+                      <button className="btn btn-outline btn-sm" onClick={() => { setSelectMode(false); setSelectedIds([]); }}>Cancel</button>
+                      {selectedIds.length > 0 && (
+                        <button className="btn btn-danger btn-sm" onClick={() => {
+                          const updated = contactMessages.filter(m => !selectedIds.includes(m.id));
+                          localStorage.setItem('contactMessages', JSON.stringify(updated));
+                          setContactMessages(updated);
+                          setSelectedIds([]);
+                          setSelectMode(false);
+                        }}>Delete ({selectedIds.length})</button>
+                      )}
+                      <button className="btn btn-outline btn-sm" onClick={() => {
+                        const updated = contactMessages.map(m => ({ ...m, read: true }));
+                        localStorage.setItem('contactMessages', JSON.stringify(updated));
+                        setContactMessages(updated);
+                      }}>Mark All Read</button>
+                    </>
+                  ) : (
+                    <>
+                      <button className="btn btn-outline btn-sm" onClick={() => setSelectMode(true)}>Select</button>
+                      <button className="btn btn-outline btn-sm" onClick={() => {
+                        const updated = contactMessages.map(m => ({ ...m, read: true }));
+                        localStorage.setItem('contactMessages', JSON.stringify(updated));
+                        setContactMessages(updated);
+                      }}>Mark All Read</button>
+                    </>
+                  )}
+                </div>
+              </div>
+              {contactMessages.length === 0 ? (
+                <div className="empty-state">
+                  <Mail size={48} />
+                  <p>No messages yet.</p>
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        {selectMode && <th className="checkbox-cell"><input type="checkbox" onChange={(e) => {
+                          if (e.target.checked) setSelectedIds(contactMessages.map(m => m.id));
+                          else setSelectedIds([]);
+                        }} checked={selectedIds.length === contactMessages.length} /></th>}
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Subject</th>
+                        <th>Message</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {contactMessages.map(msg => {
+                        const isSelected = selectedIds.includes(msg.id);
+                        const isPhoneVisible = phoneRevealed === msg.id;
+                        return (
+                          <React.Fragment key={msg.id}>
+                            <tr onClick={(e) => {
+                              if (e.target.closest('input, button, .action-btn')) return;
+                              if (!msg.read) {
+                                const updated = contactMessages.map(m =>
+                                  m.id === msg.id ? { ...m, read: true } : m
+                                );
+                                localStorage.setItem('contactMessages', JSON.stringify(updated));
+                                setContactMessages(updated);
+                              }
+                            }} style={{ cursor: 'pointer', background: msg.read ? 'transparent' : 'rgba(99,102,241,0.05)' }}>
+                              {selectMode && (
+                                <td className="checkbox-cell">
+                                  <input type="checkbox" checked={isSelected} onChange={() => {
+                                    setSelectedIds(prev =>
+                                      prev.includes(msg.id) ? prev.filter(id => id !== msg.id) : [...prev, msg.id]
+                                    );
+                                  }} />
+                                </td>
+                              )}
+                              <td><strong>{msg.name}</strong></td>
+                              <td>{msg.email}</td>
+                              <td>{msg.subject}</td>
+                              <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{msg.message}</td>
+                              <td>{new Date(msg.date).toLocaleDateString()}</td>
+                              <td>{msg.read ? <span style={{ color: 'var(--text-secondary)' }}>Read</span> : <span className="status-badge pending">New</span>}</td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button className="action-btn action-btn-danger" title="Delete message" onClick={(e) => {
+                                    e.stopPropagation();
+                                    const updated = contactMessages.filter(m => m.id !== msg.id);
+                                    localStorage.setItem('contactMessages', JSON.stringify(updated));
+                                    setContactMessages(updated);
+                                  }}><Trash2 size={15} /></button>
+                                  <button className="action-btn action-btn-phone" title="Show phone number" onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPhoneRevealed(isPhoneVisible ? null : msg.id);
+                                  }}><Phone size={15} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                            {isPhoneVisible && (
+                              <tr className="phone-reveal-row">
+                                <td colSpan={selectMode ? 8 : 7}>
+                                  <div className="phone-reveal">
+                                    <Phone size={14} />
+                                    {msg.phone ? (
+                                      <a href={`tel:${msg.phone}`}>{msg.phone}</a>
+                                    ) : (
+                                      <span style={{ color: 'var(--text-secondary)' }}>No phone number provided</span>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -463,92 +796,52 @@ export default function Admin() {
 
       {/* REACT PORTAL: Escapes CSS layout boxes and mounts form layout safely straight to document.body */}
       {isModalOpen && createPortal(
-        <div
-          className="modal-portal-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(5px)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 2147483647 // Maximum absolute z-index value allowed by browsers
-          }}
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div
-            className="modal-window"
-            style={{
-              background: '#1e1e24',
-              padding: '28px',
-              borderRadius: '12px',
-              width: '90%',
-              maxWidth: '555px',
-              maxHeight: '85vh',
-              overflowY: 'auto',
-              border: '1px solid #444',
-              color: '#fff',
-              boxShadow: '0px 24px 50px rgba(0, 0, 0, 0.7)',
-              position: 'relative',
-              boxSizing: 'border-box'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '12px' }}>
-              <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '600', color: '#fff' }}>Create Travel Package</h2>
-              <button
-                type="button"
-                style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', padding: '4px' }}
-                onClick={() => setIsModalOpen(false)}
-              >
+        <div className="modal-portal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-window" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Travel Package</h2>
+              <button type="button" onClick={() => setIsModalOpen(false)}>
                 <X size={20} />
               </button>
             </div>
 
             <form onSubmit={handleAddDestinationSubmit}>
-              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Package Title *</label>
-                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} required placeholder="Luxury Escape to Paris" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Package Title *</label>
+                  <input type="text" name="title" value={formData.title} onChange={handleInputChange} required placeholder="Luxury Escape to Paris" />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Destination City</label>
-                    <input type="text" name="destination" value={formData.destination} onChange={handleInputChange} placeholder="Paris" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Destination City</label>
+                    <input type="text" name="destination" value={formData.destination} onChange={handleInputChange} placeholder="Paris" />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Country</label>
-                    <input type="text" name="country" value={formData.country} onChange={handleInputChange} placeholder="France" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Region / Continent</label>
-                    <input type="text" name="region" value={formData.region} onChange={handleInputChange} placeholder="Europe" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Duration (Days)</label>
-                    <input type="number" name="days" value={formData.days} onChange={handleInputChange} placeholder="6" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  <div className="form-group">
+                    <label>Country</label>
+                    <input type="text" name="country" value={formData.country} onChange={handleInputChange} placeholder="France" />
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Price (INR) *</label>
-                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} required placeholder="24999" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Region / Continent</label>
+                    <input type="text" name="region" value={formData.region} onChange={handleInputChange} placeholder="Europe" />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Display Badge</label>
-                    <select name="badge" value={formData.badge} onChange={handleInputChange} style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }}>
+                  <div className="form-group">
+                    <label>Duration (Days)</label>
+                    <input type="number" name="days" value={formData.days} onChange={handleInputChange} placeholder="6" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Price (INR) *</label>
+                    <input type="number" name="price" value={formData.price} onChange={handleInputChange} required placeholder="24999" />
+                  </div>
+                  <div className="form-group">
+                    <label>Display Badge</label>
+                    <select name="badge" value={formData.badge} onChange={handleInputChange}>
                       <option value="New">New</option>
                       <option value="Featured">Featured</option>
                       <option value="Best Seller">Best Seller</option>
@@ -557,39 +850,121 @@ export default function Admin() {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Rating (1 - 5)</label>
-                    <input type="number" name="rating" min="1" max="5" step="0.1" value={formData.rating} onChange={handleInputChange} placeholder="4.8" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Rating (1 - 5)</label>
+                    <input type="number" name="rating" min="1" max="5" step="0.1" value={formData.rating} onChange={handleInputChange} placeholder="4.8" />
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Reviews Count</label>
-                    <input type="text" name="reviews" value={formData.reviews} onChange={handleInputChange} placeholder="120 reviews" style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                  <div className="form-group">
+                    <label>Reviews Count</label>
+                    <input type="text" name="reviews" value={formData.reviews} onChange={handleInputChange} placeholder="120 reviews" />
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Image URL</label>
-                  <input type="url" name="image" value={formData.image} onChange={handleInputChange} placeholder="https://images.unsplash.com/..." style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', width: '100%', boxSizing: 'border-box' }} />
+                <div className="form-group">
+                  <label>Image URL</label>
+                  <input type="url" name="image" value={formData.image} onChange={handleInputChange} placeholder="https://images.unsplash.com/..." />
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '500' }}>Description</label>
-                  <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" placeholder="Provide package itinerary highlights..." style={{ padding: '10px 12px', background: '#121214', border: '1px solid #444', borderRadius: '6px', color: '#fff', resize: 'vertical', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' }}></textarea>
+                <div className="form-group">
+                  <label>Description</label>
+                  <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" placeholder="Provide package itinerary highlights..."></textarea>
                 </div>
-
               </div>
 
-              <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '16px', borderTop: '1px solid #333' }}>
-                <button type="button" style={{ padding: '10px 20px', background: 'transparent', border: '1px solid #555', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }} onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" disabled={formSubmitting} style={{ padding: '10px 20px', background: '#e11d48', border: 'none', color: '#fff', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', opacity: formSubmitting ? 0.6 : 1 }}>
+              <div className="modal-footer">
+                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="submit" disabled={formSubmitting}>
                   {formSubmitting ? "Saving..." : "Save Destination"}
                 </button>
               </div>
             </form>
           </div>
         </div>,
-        document.body // Mounts overlay layout cleanly right onto root DOM body level!
+        document.body
+      )}
+
+      {/* Blog Creation Modal */}
+      {isBlogModalOpen && createPortal(
+        <div className="modal-portal-overlay" onClick={() => setIsBlogModalOpen(false)}>
+          <div className="modal-window" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Blog Post</h2>
+              <button type="button" onClick={() => setIsBlogModalOpen(false)}><X size={20} /></button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!blogForm.title) { showSnackbar("Title is required", "warning"); return; }
+              setBlogSubmitting(true);
+              try {
+                const res = await axios.post("https://trip-agent-backend.onrender.com/api/blog/post", blogForm);
+                if (res.data) {
+                  showSnackbar("Blog post created!", "success");
+                  setIsBlogModalOpen(false);
+                  setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' });
+                  fetchBlogs();
+                }
+              } catch (err) {
+                showSnackbar(err.response?.data?.message || "Failed to create blog post", "error");
+              } finally {
+                setBlogSubmitting(false);
+              }
+            }}>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Title *</label>
+                  <input type="text" value={blogForm.title} onChange={e => setBlogForm(p => ({ ...p, title: e.target.value }))} required placeholder="10 Hidden Gems in Paris" />
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select value={blogForm.category} onChange={e => setBlogForm(p => ({ ...p, category: e.target.value }))}>
+                      <option value="Guides">Guides</option>
+                      <option value="Dining">Dining</option>
+                      <option value="Culture">Culture</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Read Time</label>
+                    <input type="text" value={blogForm.readTime} onChange={e => setBlogForm(p => ({ ...p, readTime: e.target.value }))} placeholder="5 min read" />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Date</label>
+                    <input type="text" value={blogForm.date} onChange={e => setBlogForm(p => ({ ...p, date: e.target.value }))} placeholder="June 2, 2026" />
+                  </div>
+                  <div className="form-group">
+                    <label>Featured</label>
+                    <select value={blogForm.featured} onChange={e => setBlogForm(p => ({ ...p, featured: e.target.value === 'true' }))}>
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Image URL</label>
+                  <input type="url" value={blogForm.image} onChange={e => setBlogForm(p => ({ ...p, image: e.target.value }))} placeholder="https://images.unsplash.com/..." />
+                </div>
+                <div className="form-group">
+                  <label>Summary</label>
+                  <textarea value={blogForm.summary} onChange={e => setBlogForm(p => ({ ...p, summary: e.target.value }))} rows="3" placeholder="Brief summary..."></textarea>
+                </div>
+                <div className="form-group">
+                  <label>Content</label>
+                  <textarea value={blogForm.content} onChange={e => setBlogForm(p => ({ ...p, content: e.target.value }))} rows="5" placeholder="Full article content..."></textarea>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn-cancel" onClick={() => setIsBlogModalOpen(false)}>Cancel</button>
+                <button type="submit" disabled={blogSubmitting}>
+                  {blogSubmitting ? "Saving..." : "Save Blog Post"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

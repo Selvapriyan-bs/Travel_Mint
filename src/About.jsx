@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from './Components/Navbar';
+import Footer from './Components/Footer';
 
 export default function About() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [role,setRole]=useState("");
+
   // Safely parse local storage registration data and establish the active logged-in user state
   const [user, setUser] = useState(() => {
     try {
@@ -14,7 +16,7 @@ export default function About() {
         return {
           name: parsedData.name || (parsedData.email ? parsedData.email.split('@')[0] : "User"),
           email: parsedData.email || "",
-            role:parsedData.role || 'user',
+          role: parsedData.role || 'user',
         };
       }
     } catch (error) {
@@ -68,76 +70,12 @@ export default function About() {
     localStorage.removeItem('RegistrationData');
   };
 
-  const initialLetter = user && user.name ? user.name.charAt(0).toUpperCase() : "";
+
 
   return (
     <div>
       <title>About Us — TripAgent</title>
-      <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
-        <div className="container nav">
-          <Link to="/" className="logo">
-            <i data-lucide="compass"></i> Trip<span>Agent</span>
-          </Link>
-
-          <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/destination">Destinations</Link></li>
-            <li><Link to="/search">Search</Link></li>
-            <li><Link to="/booking">Booking</Link></li>
-            <li><Link to="/blog">Blog</Link></li>
-            <li><Link to="/about" className="active">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            {user && user.role === "admin" ? (
-              <li>
-                <Link to="/admin">Admin Dashboard</Link>
-              </li>
-            ) : null}
-            {user ? (
-              <li className="mobile-only-user">
-                <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
-                <button onClick={handleLogout} className="btn-logout-link">Logout</button>
-              </li>
-            ) : (
-              <li><Link to="/Login">Login</Link></li>
-            )}
-          </ul>
-
-          <div className="nav-cta">
-            {user && user.role === "user" ? (
-              <Link to="/dashboard" className="btn btn-outline btn-sm" style={{ marginRight: '10px' }}>
-                <i data-lucide="layout-dashboard"></i> My Dashboard
-              </Link>
-            ) : null}
-            <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
-          </div>
-
-          {user && (
-            <div className="user-profile-banner">
-              <div className="user-text-avatar">
-                {initialLetter}
-              </div>
-              <div className="user-info-dropdown">
-                <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-                <span className="user-email-sub">{user.email}</span>
-                <Link to="/dashboard" className="btn-logout" style={{ textDecoration: 'none', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <i data-lucide="layout"></i> Dashboard
-                </Link>
-                <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-              </div>
-            </div>
-          )}
-
-          <div
-            className={`nav-toggle ${menuOpen ? 'active' : ''}`}
-            id="nav-toggle"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </header>
+      <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="about" />
 
       {/* Hero Section */}
       <section className="hero" style={{ minHeight: '45vh' }}>
@@ -278,56 +216,7 @@ export default function About() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-col">
-            <Link to="/" className="footer-logo">
-              <i data-lucide="compass"></i> Trip<span>Agent</span>
-            </Link>
-            <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
-            <div className="social-links">
-              <a href="#"><i data-lucide="facebook"></i></a>
-              <a href="#"><i data-lucide="instagram"></i></a>
-              <a href="#"><i data-lucide="twitter"></i></a>
-              <a href="#"><i data-lucide="youtube"></i></a>
-            </div>
-          </div>
-          <div className="footer-col">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/destination">Destinations</Link></li>
-              <li><Link to="/search">Search</Link></li>
-              <li><Link to="/booking">Booking</Link></li>
-              <li><Link to="/blog">Blog</Link></li>
-              <li><Link to="/about">About Us</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Top Destinations</h3>
-            <ul>
-              <li><a href="#">Paris, France</a></li>
-              <li><a href="#">Bali, Indonesia</a></li>
-              <li><a href="#">Kyoto, Japan</a></li>
-              <li><a href="#">New York, USA</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Newsletter</h3>
-            <p>Subscribe to get our weekly travel guides and exclusive members-only deals.</p>
-            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}>
-              <input type="email" placeholder="Your Email Address" required />
-              <button type="submit">Join</button>
-            </form>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
-          <p>Terms of Service &bull; Privacy Policy</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

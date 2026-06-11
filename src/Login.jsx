@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import toast, { Toaster } from 'react-hot-toast';
+import Footer from './Components/Footer';
 export default function Login() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
   const [userDetails, setuserDetails] = useState({
     name: "",
     email: "",
@@ -82,9 +83,9 @@ export default function Login() {
 
       if (response.data && response.data.data) {
         const userData = response.data.data;
-        
+
         localStorage.setItem("RegistrationData", JSON.stringify(userData));
-        alert(response.data.message || "Login successful!");
+        toast.success(response.data.message || "Login successful!");
 
         // Route evaluation
         if (userData.role === "admin" || response.data.isAdmin === true) {
@@ -96,7 +97,7 @@ export default function Login() {
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Something went wrong during login.";
-      alert(errorMessage);
+      toast.error(errorMessage);
       setuserDetails({
         name: "",
         email: "",
@@ -107,11 +108,12 @@ export default function Login() {
 
   return (
     <div>
+      <Toaster position="top-center" toastOptions={{ style: { background: '#1e293b', color: '#f1f5f9', border: '1px solid #334155' } }} />
       <title>Login — TripAgent</title>
       <meta name="description" content="Log in to your TripAgent account to manage bookings, explore custom itineraries, and view saved trips." />
       <link rel="stylesheet" href="assets/css/style.css" />
 
-      <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
+      {/* <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container nav">
           <Link to="/" className="logo">
             <i data-lucide="compass"></i> Trip<span>Agent</span>
@@ -120,13 +122,12 @@ export default function Login() {
             <li><Link to="/">Home</Link></li>
             <li><Link to="/destination">Destinations</Link></li>
             <li><Link to="/search">Search</Link></li>
-            <li><Link to="/booking">Booking</Link></li>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            
-            {/* STRICT SYSTEM EVALUATION: Renders ONLY if the active token profile explicitly states 'admin' */}
-            {currentUser && currentUser.role === "admin" ? (
+            <li><Link to="/contact">Contact</Link></li> */}
+
+      {/* STRICT SYSTEM EVALUATION: Renders ONLY if the active token profile explicitly states 'admin' */}
+      {/* {currentUser && currentUser.role === "admin" ? (
               <li>
                 <Link to="/admin" style={{ color: '#e11d48', fontWeight: '700', border: '1px dashed #e11d48', padding: '4px 8px', borderRadius: '4px' }}>
                   Admin Dashboard
@@ -136,9 +137,6 @@ export default function Login() {
 
             <li><Link to="/Login" className="active">Login</Link></li>
           </ul>
-          <div className="nav-cta">
-            <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
-          </div>
           <div
             className={`nav-toggle ${menuOpen ? 'active' : ''}`}
             id="nav-toggle"
@@ -149,28 +147,28 @@ export default function Login() {
             <span></span>
           </div>
         </div>
-      </header>
+      </header> */}
 
       <section className="hero" style={{ minHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')" }}></div>
         <div className="hero-overlay" style={{ opacity: 0.65 }}></div>
 
         <div className="container animate-fade-in" style={{ zIndex: 2, display: 'flex', justifyContent: 'center', margin: '120px auto 60px auto' }}>
-          <div className="card-premium" style={{ width: '100%', maxWidth: '450px', background: 'rgba(255, 255, 255, 0.95)', color: '#111', padding: '40px 30px', border: 'none' }}>
+          <div className="card-premium" style={{ width: '100%', maxWidth: '450px', color: '#111', padding: '40px 30px' }}>
 
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
               <div style={{ color: 'var(--color-primary, #0ea5e9)', fontSize: '2.5rem', marginBottom: '10px' }}>
                 <i data-lucide="user-check" style={{ width: '48px', height: '48px' }}></i>
               </div>
-              <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px', color: '#1a1a1a' }}>Welcome Back</h2>
-              <p style={{ color: '#666', fontSize: '0.95rem' }}>Log in to access your dashboard and bookings</p>
+              <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px', color: '#e2dfdf' }}>Welcome Back</h2>
+              <p style={{ color: '#bbb9b9', fontSize: '0.95rem' }}>Log in to access your dashboard and bookings</p>
             </div>
 
             <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
               {/* Email Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="login-email" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Email Address</label>
+                <label htmlFor="login-email" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#bbb9b9' }}>Email Address</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <i data-lucide="mail" style={{ position: 'absolute', left: '12px', width: '18px', height: '18px', color: '#999' }}></i>
                   <input
@@ -188,7 +186,7 @@ export default function Login() {
 
               {/* Password Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label htmlFor="login-password" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#333' }}>Password</label>
+                <label htmlFor="login-password" style={{ fontWeight: '600', fontSize: '0.85rem', color: '#bbb9b9' }}>Password</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <i data-lucide="lock" style={{ position: 'absolute', left: '12px', width: '18px', height: '18px', color: '#999' }}></i>
                   <input
@@ -206,7 +204,7 @@ export default function Login() {
 
               {/* Checkboxes / Meta */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#555' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#bbb9b9' }}>
                   <input
                     type="checkbox"
                     checked={rememberMe}
@@ -214,7 +212,7 @@ export default function Login() {
                     style={{ cursor: 'pointer' }}
                   /> Remember me
                 </label>
-                <a href="#forgot" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none', fontWeight: '500' }}>Forgot Password?</a>
+                <Link to="/forgot-password" style={{ color: 'var(--color-primary, #0ea5e9)', textDecoration: 'none', fontWeight: '500' }}>Forgot Password?</Link>
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ padding: '14px', borderRadius: '6px', width: '100%', cursor: 'pointer', fontSize: '1rem', fontWeight: '600', marginTop: '10px' }}>
@@ -225,7 +223,7 @@ export default function Login() {
 
             {/* Context link below main button forms */}
 
-            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '15px' }}>
+            <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9rem', color: '#bbb9b9', borderTop: '1px solid #eee', paddingTop: '15px' }}>
               Don't have an account? <Link to="/Register" style={{ color: 'var(--color-primary, #0ea5e9)', fontWeight: '600', textDecoration: 'none' }}>Create Account</Link>
             </div>
 
@@ -233,52 +231,7 @@ export default function Login() {
         </div>
       </section>
 
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-col">
-            <Link to="/" className="footer-logo">
-              <i data-lucide="compass"></i> Trip<span>Agent</span>
-            </Link>
-            <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
-            <div className="social-links">
-              <a href="#"><i data-lucide="facebook"></i></a>
-              <a href="#"><i data-lucide="instagram"></i></a>
-              <a href="#"><i data-lucide="twitter"></i></a>
-              <a href="#"><i data-lucide="youtube"></i></a>
-            </div>
-          </div>
-          <div className="footer-col">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/destination">Destinations</Link></li>
-              <li><Link to="/search">Search</Link></li>
-              <li><Link to="/booking">Booking</Link></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Top Destinations</h3>
-            <ul>
-              <li><a href="#">Paris, France</a></li>
-              <li><a href="#">Bali, Indonesia</a></li>
-              <li><a href="#">Kyoto, Japan</a></li>
-              <li><a href="#">New York, USA</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Newsletter</h3>
-            <p>Subscribe to get our weekly travel guides and exclusive members-only deals.</p>
-            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}>
-              <input type="email" placeholder="Your Email Address" required />
-              <button type="submit">Join</button>
-            </form>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
-          <p>Terms of Service &bull; Privacy Policy</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

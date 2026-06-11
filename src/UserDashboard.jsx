@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
+import { useSnackbar } from './Components/SnackbarProvider';
+import Navbar from './Components/Navbar';
+import Footer from './Components/Footer';
 export default function UserDashboard() {
+  const showSnackbar = useSnackbar();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [bookingLoading, setBookingLoading] = useState(true);
   const navigate = useNavigate();
 
   // Safely parse local storage registration data and establish the active logged-in user state
@@ -22,6 +28,26 @@ export default function UserDashboard() {
     }
     return null;
   });
+
+  const fetchUserBookings = async (email) => {
+    setBookingLoading(true);
+    try {
+      const res = await axios.get("https://trip-agent-backend.onrender.com/api/booking");
+      if (res && res.data) {
+        let data = res.data;
+        if (!Array.isArray(data) && typeof data === 'object') data = data.data || data.bookings || [];
+        if (Array.isArray(data)) {
+          const userBookings = data.filter(b => b.email === email);
+          setBookings(userBookings);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+      setBookings([]);
+    } finally {
+      setBookingLoading(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,10 +83,14 @@ export default function UserDashboard() {
   }, []);
 
   useEffect(() => {
+    if (user && user.email) fetchUserBookings(user.email);
+  }, [user]);
+
+  useEffect(() => {
     if (window.lucide) {
       window.lucide.createIcons();
     }
-  }, [menuOpen, user]);
+  }, [menuOpen, user, bookings]);
 
   const handleLogout = () => {
     setUser(null);
@@ -68,7 +98,12 @@ export default function UserDashboard() {
     navigate('/');
   };
 
-  const initialLetter = user && user.name ? user.name.charAt(0).toUpperCase() : "";
+  const activeBookings = bookings.filter(b => !['done', 'cancelled'].includes(b.status));
+  const completedTrips = bookings.filter(b => b.status === 'done').length;
+  const rewardPoints = completedTrips * 50 + activeBookings.length * 20;
+  const memberSince = bookings.length > 0
+    ? new Date(Math.min(...bookings.map(b => new Date(b.createdAt || b.date || b.departureDate || Date.now()).getTime()))).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : null;
 
   // Guard: If user is not logged in, show a beautiful lock screen
   if (!user) {
@@ -95,53 +130,7 @@ export default function UserDashboard() {
   return (
     <div>
       <title>My Dashboard — TripAgent</title>
-      <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
-        <div className="container nav">
-          <Link to="/" className="logo">
-            <i data-lucide="compass"></i> Trip<span>Agent</span>
-          </Link>
-          
-          <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/destination">Destinations</Link></li>
-            <li><Link to="/search">Search</Link></li>
-            <li><Link to="/booking">Booking</Link></li>
-            <li><Link to="/blog">Blog</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-            
-            <li className="mobile-only-user">
-              <span className="user-welcome-text">Hello, {user.name.split(' ')[0]}</span>
-              <button onClick={handleLogout} className="btn-logout-link">Logout</button>
-            </li>
-          </ul>
-
-          <div className="nav-cta">
-            <Link to="/booking" className="btn btn-primary btn-sm"><i data-lucide="calendar"></i> Book Now</Link>
-          </div>
-                   
-          <div className="user-profile-banner">
-            <div className="user-text-avatar">
-              {initialLetter}
-            </div>
-            <div className="user-info-dropdown">
-              <span className="user-name">Hi, {user.name.split(' ')[0]}!</span>
-              <span className="user-email-sub">{user.email}</span>
-              <button onClick={handleLogout} className="btn-logout"><i data-lucide="log-out"></i> Logout</button>
-            </div>
-          </div>
-          
-          <div
-            className={`nav-toggle ${menuOpen ? 'active' : ''}`}
-            id="nav-toggle"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </header>
+      <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="" />
 
       {/* Hero Section */}
       <section className="hero" style={{ minHeight: '40vh' }}>
@@ -162,8 +151,8 @@ export default function UserDashboard() {
               <i data-lucide="plane"></i>
             </div>
             <div>
-              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>1</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Booked Itinerary</p>
+              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{bookingLoading ? "..." : activeBookings.length}</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Active Itineraries</p>
             </div>
           </div>
 
@@ -172,7 +161,7 @@ export default function UserDashboard() {
               <i data-lucide="award"></i>
             </div>
             <div>
-              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>120</h3>
+              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{bookingLoading ? "..." : rewardPoints}</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Travel Reward Points</p>
             </div>
           </div>
@@ -182,7 +171,7 @@ export default function UserDashboard() {
               <i data-lucide="check-square"></i>
             </div>
             <div>
-              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>0</h3>
+              <h3 style={{ fontSize: '1.5rem', margin: 0 }}>{bookingLoading ? "..." : completedTrips}</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Trips Completed</p>
             </div>
           </div>
@@ -193,7 +182,7 @@ export default function UserDashboard() {
           {/* Left Column: Bookings table */}
           <div>
             <h2 className="font-serif" style={{ fontSize: '1.6rem', marginBottom: '16px' }}>Active Booking Logs</h2>
-            
+
             <div className="card-premium" style={{ height: 'auto', padding: '24px', overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
@@ -207,25 +196,39 @@ export default function UserDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.9rem' }}>
-                    <td style={{ padding: '16px 8px', fontWeight: 'bold' }}>BK-8902</td>
-                    <td style={{ padding: '16px 8px' }}>Paris Romance Package</td>
-                    <td style={{ padding: '16px 8px' }}>Oct 12, 2026</td>
-                    <td style={{ padding: '16px 8px' }}>2 Adults</td>
-                    <td style={{ padding: '16px 8px' }}>
-                      <span style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>Approved</span>
-                    </td>
-                    <td style={{ padding: '16px 8px' }}>
-                      <Link to="/booking" className="btn btn-outline btn-sm" style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Manage</Link>
-                    </td>
-                  </tr>
+                  {bookingLoading ? (
+                    <tr><td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading your bookings...</td></tr>
+                  ) : bookings.length === 0 ? (
+                    <tr><td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>No bookings yet. Start planning your next trip!</td></tr>
+                  ) : bookings.map((item) => {
+                    const statusColor = item.status === 'booked' ? '#f59e0b' :
+                      item.status === 'contacted' ? '#6366f1' :
+                      item.status === 'on-trip' ? '#06b6d4' :
+                      item.status === 'done' ? '#22c55e' : '#888';
+                    return (
+                      <tr key={item._id || item.id} style={{ borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
+                        <td style={{ padding: '16px 8px', fontWeight: 'bold' }}>{(item._id || item.id || "").slice(-6).toUpperCase()}</td>
+                        <td style={{ padding: '16px 8px' }}>{item.destination || "—"}</td>
+                        <td style={{ padding: '16px 8px' }}>{item.departureDate ? new Date(item.departureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "—"}</td>
+                        <td style={{ padding: '16px 8px' }}>{item.pax || item.guests || 1} {(item.pax || item.guests || 1) === 1 ? 'Guest' : 'Guests'}</td>
+                        <td style={{ padding: '16px 8px' }}>
+                          <span style={{ background: `${statusColor}1a`, color: statusColor, padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'capitalize' }}>
+                            {item.status === 'on-trip' ? 'On Trip' : item.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '16px 8px' }}>
+                          <Link to="/booking" className="btn btn-outline btn-sm" style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Manage</Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               <div style={{ marginTop: '20px', display: 'flex', gap: '15px' }}>
-                <button onClick={() => alert('PDF Ticket download started...')} className="btn btn-secondary btn-sm" style={{ fontSize: '0.82rem' }}>
+                <button onClick={() => showSnackbar('PDF Ticket download started...', 'info')} className="btn btn-secondary btn-sm" style={{ fontSize: '0.82rem' }}>
                   <i data-lucide="download"></i> Download Tickets
                 </button>
-                <button onClick={() => alert('Please contact support at support@tripagent.com to modify this trip.')} className="btn btn-outline btn-sm" style={{ fontSize: '0.82rem' }}>
+                <button onClick={() => showSnackbar('Please contact support at support@tripagent.com to modify this trip.', 'info')} className="btn btn-outline btn-sm" style={{ fontSize: '0.82rem' }}>
                   <i data-lucide="edit"></i> Request Modification
                 </button>
               </div>
@@ -245,11 +248,11 @@ export default function UserDashboard() {
                 </div>
                 <div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Membership Tier</p>
-                  <strong style={{ fontSize: '1.1rem', color: 'var(--primary)' }}>Club Explorer</strong>
+                  <strong style={{ fontSize: '1.1rem', color: 'var(--primary)' }}>{completedTrips >= 5 ? 'Travel Elite' : completedTrips >= 2 ? 'Adventurer' : 'Club Explorer'}</strong>
                 </div>
                 <div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>Member Since</p>
-                  <strong style={{ fontSize: '1.1rem' }}>June 2026</strong>
+                  <strong style={{ fontSize: '1.1rem' }}>{memberSince || 'Just Joined'}</strong>
                 </div>
               </div>
             </div>
@@ -260,12 +263,12 @@ export default function UserDashboard() {
             <div className="card-premium" style={{ height: 'auto', padding: '24px' }}>
               <h3 className="font-serif" style={{ fontSize: '1.3rem', marginBottom: '16px' }}>Recommended Journeys</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>Based on your interest in culture and relaxing vacations, we recommend these deals:</p>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <img 
-                    src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=150&q=80" 
-                    alt="Bali" 
+                  <img
+                    src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=150&q=80"
+                    alt="Bali"
                     style={{ width: '70px', height: '70px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
                   />
                   <div>
@@ -276,9 +279,9 @@ export default function UserDashboard() {
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <img 
-                    src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=150&q=80" 
-                    alt="Kyoto" 
+                  <img
+                    src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=150&q=80"
+                    alt="Kyoto"
                     style={{ width: '70px', height: '70px', borderRadius: 'var(--radius-sm)', objectFit: 'cover' }}
                   />
                   <div>
@@ -295,56 +298,7 @@ export default function UserDashboard() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="container footer-grid">
-          <div className="footer-col">
-            <Link to="/" className="footer-logo">
-              <i data-lucide="compass"></i> Trip<span>Agent</span>
-            </Link>
-            <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
-            <div className="social-links">
-              <a href="#"><i data-lucide="facebook"></i></a>
-              <a href="#"><i data-lucide="instagram"></i></a>
-              <a href="#"><i data-lucide="twitter"></i></a>
-              <a href="#"><i data-lucide="youtube"></i></a>
-            </div>
-          </div>
-          <div className="footer-col">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/destination">Destinations</Link></li>
-              <li><Link to="/search">Search</Link></li>
-              <li><Link to="/booking">Booking</Link></li>
-              <li><Link to="/blog">Blog</Link></li>
-              <li><Link to="/about">About Us</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Top Destinations</h3>
-            <ul>
-              <li><a href="#">Paris, France</a></li>
-              <li><a href="#">Bali, Indonesia</a></li>
-              <li><a href="#">Kyoto, Japan</a></li>
-              <li><a href="#">New York, USA</a></li>
-            </ul>
-          </div>
-          <div className="footer-col">
-            <h3>Newsletter</h3>
-            <p>Subscribe to get our weekly travel guides and exclusive members-only deals.</p>
-            <form className="newsletter-form" onSubmit={(e) => { e.preventDefault(); alert('Thank you for subscribing!'); }}>
-              <input type="email" placeholder="Your Email Address" required />
-              <button type="submit">Join</button>
-            </form>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
-          <p>Terms of Service &bull; Privacy Policy</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

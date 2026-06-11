@@ -11,19 +11,22 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.85); /* Matches --bg-primary with high alpha opacity */
-  backdrop-filter: blur(6px);
+  background-color: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2147483647; /* Escapes all layout stacking layers completely */
+  z-index: 2147483647;
   padding: 20px;
 }
 
 /* ─── FLOATING MODAL WINDOW FRAME ─────────────────────────────────────── */
 .modal-window {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   color: var(--text-primary);
   width: 100%;
@@ -31,8 +34,8 @@
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Encapsulates structural scrolling internally */
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
   animation: modalSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -190,7 +193,7 @@
 }
 
 .modal-window .modal-footer button[type="submit"] {
-  background-color: var(--accent-color);
+  background-color: var(--primary);
   color: white;
   border: none;
   padding: 10px 20px;
@@ -202,8 +205,238 @@
 }
 
 .modal-window .modal-footer button[type="submit"]:hover:not(:disabled) {
-  opacity: 0.95;
+  background-color: var(--primary-hover);
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.modal-window .modal-footer .btn-cancel {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.modal-window .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.modal-window .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-window input[type="email"],
+.modal-window input[type="tel"] {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition);
+}
+
+.modal-window input[type="email"]:focus,
+.modal-window input[type="tel"]:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+}
+
+/* ─── PANEL HEADER WITH ACTION BUTTONS ────────────────────────────────── */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.panel-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+/* ─── STATUS BADGE FOR MESSAGES ──────────────────────────────────────── */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge.pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ─── BOOKING STATUS BADGES ──────────────────────────────────────────────── */
+.status-booked {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.status-contacted {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+.status-on-trip {
+  background: rgba(6, 182, 212, 0.15);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+.status-done {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* ─── STATUS ACTION BUTTONS IN BOOKING TABLE ───────────────────────────── */
+.btn-status {
+  padding: 4px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-status:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  opacity: 1;
+}
+.btn-status.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  opacity: 1;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-tab {
+  padding: 8px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface-alt);
+  color: var(--text);
+  transition: all 0.2s;
+  text-transform: capitalize;
+}
+.filter-tab:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.filter-tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ─── MESSAGES PANEL: SELECT BAR & ACTION BUTTONS ────────────────────── */
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-danger:hover {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.checkbox-cell {
+  width: 40px;
+  text-align: center;
+  vertical-align: middle;
+}
+.checkbox-cell input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.action-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+}
+.action-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+.action-btn-phone:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.phone-reveal-row td {
+  padding: 0 !important;
+  border-bottom: 1px solid var(--border-color);
+}
+.phone-reveal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(99, 102, 241, 0.05);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+.phone-reveal a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.phone-reveal a:hover {
+  text-decoration: underline;
 }
 
 /* ─── RESPONSIVE SYSTEM GRID OVERRIDES ────────────────────────────────── */
