@@ -86,13 +86,7 @@ export default function Login() {
 
         localStorage.setItem("RegistrationData", JSON.stringify(userData));
         toast.success(response.data.message || "Login successful!");
-
-        // Route evaluation
-        if (userData.role === "admin" || response.data.isAdmin === true) {
           navigate("/admin");
-        } else {
-          navigate("/");
-        }
         window.location.reload();
       }
     } catch (error) {
