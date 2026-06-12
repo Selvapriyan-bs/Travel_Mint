@@ -79,7 +79,7 @@ export default function Login() {
       const response = await axios.post("https://trip-agent-backend.onrender.com/api/user/login", {
         email: userDetails.email,
         password: userDetails.password
-      });
+      },{timeout:1200});
 
       if (response.data && response.data.data) {
         const userData = response.data.data;

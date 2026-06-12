@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from './Components/Navbar';
 import Footer from './Components/Footer';
+import { useSnackbar } from './Components/SnackbarProvider';
 
 export default function PackageDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const showSnackbar = useSnackbar();
   const [pkg, setPkg] = useState(null);
   const [loading, setLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
@@ -62,6 +65,15 @@ export default function PackageDetails() {
 
   const handleLogout = () => { setUser(null); localStorage.removeItem('RegistrationData'); };
 
+  const handleBookNow = () => {
+    if (!user) {
+      showSnackbar("Login first to book a package", "error");
+      navigate("/login");
+    } else {
+      navigate(`/booking?packageId=${pkg._id || pkg.id}`);
+    }
+  };
+
   if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: 'var(--text-muted)' }}>Loading package details...</div>;
   }
@@ -98,9 +110,9 @@ export default function PackageDetails() {
             <div><span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Rating</span><div style={{ fontWeight: 600 }}>{pkg.rating} ★ ({pkg.reviews})</div></div>
             <div><span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Price</span><div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--primary)' }}>&#8377;{(pkg.price ?? 0).toLocaleString()} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 400 }}>/ person</span></div></div>
           </div>
-          <Link to={`/booking?packageId=${pkg._id || pkg.id}`} className="btn btn-primary btn-lg">
+          <button onClick={handleBookNow} className="btn btn-primary btn-lg">
             Book Now <i data-lucide="arrow-right"></i>
-          </Link>
+          </button>
         </div>
 
         {/* Itinerary */}

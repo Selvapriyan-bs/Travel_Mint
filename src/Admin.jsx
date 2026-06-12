@@ -48,7 +48,8 @@ export default function Admin() {
   }, [isModalOpen]);
 
   const openFormModal = () => {
-    console.log("Add Destination clicked");
+    setEditingId(null);
+    setFormData({ title: '', destination: '', region: '', country: '', price: '', days: '', rating: '5', reviews: '0 reviews', badge: 'New', description: '', image: '' });
     setActiveView("destinations");
     setIsModalOpen(true);
   };
@@ -72,6 +73,7 @@ export default function Admin() {
     image: ''
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [blogs, setBlogs] = useState([]);
   const [blogLoading, setBlogLoading] = useState(true);
@@ -80,6 +82,7 @@ export default function Admin() {
     title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: ''
   });
   const [blogSubmitting, setBlogSubmitting] = useState(false);
+  const [editingBlogId, setEditingBlogId] = useState(null);
 
   const fetchBlogs = async () => {
     setBlogLoading(true);
@@ -230,7 +233,7 @@ export default function Admin() {
 
     setFormSubmitting(true);
     try {
-      const response = await axios.post("https://trip-agent-backend.onrender.com/api/package/post", {
+      const payload = {
         title: formData.title,
         destination: formData.destination || formData.title,
         region: formData.region,
@@ -242,11 +245,15 @@ export default function Admin() {
         badge: formData.badge,
         description: formData.description,
         image: formData.image
-      });
+      };
+      const response = editingId
+        ? await axios.put(`https://trip-agent-backend.onrender.com/api/package/${editingId}`, payload)
+        : await axios.post("https://trip-agent-backend.onrender.com/api/package/post", payload);
 
       if (response.status === 201 || response.data) {
-          showSnackbar("Destination Package added successfully!", "success");
+          showSnackbar("Destination Package saved successfully!", "success");
         setIsModalOpen(false);
+        setEditingId(null);
         setFormData({
           title: '', destination: '', region: '', country: '',
           price: '', days: '', rating: '5', reviews: '0 reviews',
@@ -255,7 +262,7 @@ export default function Admin() {
         fetchDestinations();
       }
     } catch (error) {
-      console.error("Error creating new destination item:", error);
+      console.error("Error saving destination item:", error);
       showSnackbar(error.response?.data?.message || "Submission failed.", "error");
     } finally {
       setFormSubmitting(false);
@@ -571,10 +578,11 @@ export default function Admin() {
                         <img src={dest.image} alt={dest.name} />
                         <div className="dest-img-overlay"></div>
                         <div className="dest-img-actions">
-                          <button className="dest-edit-btn" onClick={() => { setFormData({
+                          <button className="dest-edit-btn" onClick={() => { setEditingId(dest.id); setFormData({
                             title: dest.name, destination: dest.name, country: dest.country,
                             price: String(dest.price), description: dest.desc, image: dest.image,
-                            badge: dest.badge || 'New'
+                            badge: dest.badge || 'New', days: dest.days || '', region: dest.region || '',
+                            rating: dest.rating || '5', reviews: dest.reviews || '0 reviews'
                           }); setIsModalOpen(true); }}>
                             <Pencil size={14} />
                           </button>
@@ -609,13 +617,14 @@ export default function Admin() {
                   <h2>Blog Posts</h2>
                   <p>Manage travel blog articles</p>
                 </div>
-                <button type="button" className="btn-add"
-                  onClick={() => {
-                    setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' });
-                    setIsBlogModalOpen(true);
-                  }}>
-                  <Plus size={18} /> Add Blog Post
-                </button>
+      <button type="button" className="btn-add"
+        onClick={() => {
+          setEditingBlogId(null);
+          setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' });
+          setIsBlogModalOpen(true);
+        }}>
+        <Plus size={18} /> Add Blog Post
+      </button>
               </div>
 
               {blogLoading ? (
@@ -630,7 +639,7 @@ export default function Admin() {
                         <img src={blog.image} alt={blog.title} />
                         <div className="dest-img-overlay"></div>
                         <div className="dest-img-actions">
-                          <button className="dest-edit-btn" onClick={() => { setBlogForm({
+                          <button className="dest-edit-btn" onClick={() => { setEditingBlogId(blog._id || blog.id); setBlogForm({
                             title: blog.title, category: blog.category, readTime: blog.readTime || '',
                             date: blog.date || '', summary: blog.summary || '', image: blog.image || '',
                             featured: blog.featured || false, content: blog.content || ''
@@ -802,11 +811,11 @@ export default function Admin() {
 
       {/* REACT PORTAL: Escapes CSS layout boxes and mounts form layout safely straight to document.body */}
       {isModalOpen && createPortal(
-        <div className="modal-portal-overlay" onClick={() => setIsModalOpen(false)}>
+        <div className="modal-portal-overlay" onClick={() => { setIsModalOpen(false); setEditingId(null); setFormData({ title: '', destination: '', region: '', country: '', price: '', days: '', rating: '5', reviews: '0 reviews', badge: 'New', description: '', image: '' }); }}>
           <div className="modal-window" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Create Travel Package</h2>
-              <button type="button" onClick={() => setIsModalOpen(false)}>
+              <h2>{editingId ? 'Edit Travel Package' : 'Create Travel Package'}</h2>
+              <button type="button" onClick={() => { setIsModalOpen(false); setEditingId(null); setFormData({ title: '', destination: '', region: '', country: '', price: '', days: '', rating: '5', reviews: '0 reviews', badge: 'New', description: '', image: '' }); }}>
                 <X size={20} />
               </button>
             </div>
@@ -879,9 +888,9 @@ export default function Admin() {
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                <button type="button" className="btn-cancel" onClick={() => { setIsModalOpen(false); setEditingId(null); setFormData({ title: '', destination: '', region: '', country: '', price: '', days: '', rating: '5', reviews: '0 reviews', badge: 'New', description: '', image: '' }); }}>Cancel</button>
                 <button type="submit" disabled={formSubmitting}>
-                  {formSubmitting ? "Saving..." : "Save Destination"}
+                  {formSubmitting ? "Saving..." : editingId ? "Update Destination" : "Save Destination"}
                 </button>
               </div>
             </form>
@@ -892,26 +901,29 @@ export default function Admin() {
 
       {/* Blog Creation Modal */}
       {isBlogModalOpen && createPortal(
-        <div className="modal-portal-overlay" onClick={() => setIsBlogModalOpen(false)}>
+        <div className="modal-portal-overlay" onClick={() => { setIsBlogModalOpen(false); setEditingBlogId(null); setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' }); }}>
           <div className="modal-window" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Create Blog Post</h2>
-              <button type="button" onClick={() => setIsBlogModalOpen(false)}><X size={20} /></button>
+              <h2>{editingBlogId ? 'Edit Blog Post' : 'Create Blog Post'}</h2>
+              <button type="button" onClick={() => { setIsBlogModalOpen(false); setEditingBlogId(null); setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' }); }}><X size={20} /></button>
             </div>
             <form onSubmit={async (e) => {
               e.preventDefault();
               if (!blogForm.title) { showSnackbar("Title is required", "warning"); return; }
               setBlogSubmitting(true);
               try {
-                const res = await axios.post("https://trip-agent-backend.onrender.com/api/blog/post", blogForm);
+                const res = editingBlogId
+                  ? await axios.put(`https://trip-agent-backend.onrender.com/api/blog/${editingBlogId}`, blogForm)
+                  : await axios.post("https://trip-agent-backend.onrender.com/api/blog/post", blogForm);
                 if (res.data) {
-                  showSnackbar("Blog post created!", "success");
+                  showSnackbar(editingBlogId ? "Blog post updated!" : "Blog post created!", "success");
                   setIsBlogModalOpen(false);
+                  setEditingBlogId(null);
                   setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' });
                   fetchBlogs();
                 }
               } catch (err) {
-                showSnackbar(err.response?.data?.message || "Failed to create blog post", "error");
+                showSnackbar(err.response?.data?.message || "Failed to save blog post", "error");
               } finally {
                 setBlogSubmitting(false);
               }
@@ -962,9 +974,9 @@ export default function Admin() {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={() => setIsBlogModalOpen(false)}>Cancel</button>
+                <button type="button" className="btn-cancel" onClick={() => { setIsBlogModalOpen(false); setEditingBlogId(null); setBlogForm({ title: '', category: 'Guides', readTime: '', date: '', summary: '', image: '', featured: false, content: '' }); }}>Cancel</button>
                 <button type="submit" disabled={blogSubmitting}>
-                  {blogSubmitting ? "Saving..." : "Save Blog Post"}
+                  {blogSubmitting ? "Saving..." : editingBlogId ? "Update Post" : "Save Blog Post"}
                 </button>
               </div>
             </form>
