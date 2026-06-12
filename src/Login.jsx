@@ -86,8 +86,12 @@ export default function Login() {
 
         localStorage.setItem("RegistrationData", JSON.stringify(userData));
         toast.success(response.data.message || "Login successful!");
+<<<<<<< HEAD
 
         navigate("/");
+=======
+          navigate("/");
+>>>>>>> d2625d1d7fe5b38d3bc7a7097aa8a09d76309490
         window.location.reload();
       }
     } catch (error) {
