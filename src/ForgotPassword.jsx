@@ -5,8 +5,6 @@ import { useSnackbar } from './Components/SnackbarProvider';
 import Navbar from './Components/Navbar';
 import Footer from './Components/Footer';
 
-const API_BASE = "http://localhost:5000";
-
 export default function ForgotPassword() {
   const showSnackbar = useSnackbar();
   const [scrolled, setScrolled] = useState(false);
@@ -51,7 +49,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/user/forgot-password`, { email }, { timeout: 15000 });
+      await axios.post("http://localhost:5000/api/user/forgot-password", { email },  { timeout: 15000 });
       setStep(2);
       showSnackbar("OTP sent to your email", "success");
     } catch (error) {
@@ -73,7 +71,7 @@ export default function ForgotPassword() {
     }
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/api/user/reset-password`, { email, otp, newPassword }, { timeout: 15000 });
+      await axios.post("http://localhost:5000/api/user/reset-password", { email, otp, newPassword }, { timeout: 15000 });
       setIsSuccess(true);
       showSnackbar("Password reset successfully", "success");
     } catch (error) {

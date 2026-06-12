@@ -423,7 +423,7 @@ export default function Admin() {
                           <td>{item.destination || "—"}</td>
                           <td>{item.pax || item.guests || 1}</td>
                           <td>&#8377;{Number(item.total || item.price || 0).toLocaleString()}</td>
-                          <td><span className={`badge status-${item.status}`}>{item.status === 'on-trip' ? 'On Trip' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}</span></td>
+                          <td><span className={`badge status-${item.status || 'pending'}`}>{item.status === 'on-trip' ? 'On Trip' : item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Pending'}</span></td>
                           <td>{item.date || item.createdAt?.slice(0, 10) || "—"}</td>
                         </tr>
                       ))}
@@ -461,11 +461,11 @@ export default function Admin() {
                   />
                 </div>
                 <div className="filter-tabs">
-                  {['all', 'booked', 'contacted', 'on-trip', 'done'].map(s => (
+                  {['all', 'assign agent', 'booked', 'contacted', 'on-trip', 'done'].map(s => (
                     <button key={s} onClick={() => setBookingFilter(s)}
                       className={`filter-tab ${bookingFilter === s ? 'active' : ''}`}
                     >
-                      {s === 'all' ? 'All' : s === 'on-trip' ? 'On Trip' : s.charAt(0).toUpperCase() + s.slice(1)}
+                      {s === 'all' ? 'All' : s === 'on-trip' ? 'On Trip' : s === 'assign agent' ? 'Assign Agent' : s.charAt(0).toUpperCase() + s.slice(1)}
                     </button>
                   ))}
                 </div>
@@ -504,24 +504,30 @@ export default function Admin() {
                           <td>{item.pax || item.guests || 1} {(item.pax || item.guests || 1) === 1 ? 'Pax' : 'People'}</td>
                           <td style={{ fontWeight: '600' }}>&#8377;{Number(item.total || item.price || 0).toLocaleString()}</td>
                           <td>
-                            <span className={`badge status-${item.status}`}>
-                              {item.status === 'on-trip' ? 'On Trip' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                            <span className={`badge status-${item.status || 'assign agent'}`}>
+                              {item.status === 'on-trip' ? 'On Trip' : item.status === 'assign agent' ? 'Assign Agent' : item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Assign Agent'}
                             </span>
                           </td>
                           <td style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                              {['booked', 'contacted', 'on-trip', 'done'].map(status => (
-                                <button key={status} onClick={async () => {
-                                  if (item.status === status) return;
-                                  try {
-                                    await axios.put(`https://trip-agent-backend.onrender.com/api/booking/${item._id || item.id}`, { status });
-                                    fetchBookings();
-                                  } catch (err) { showSnackbar("Failed to update status", "error"); }
-                                }} className={`btn-status ${item.status === status ? 'active' : ''}`}>
-                                  {status === 'on-trip' ? 'On Trip' : status.charAt(0).toUpperCase() + status.slice(1)}
-                                </button>
+                            <select value={item.status || 'assign agent'} onChange={async (e) => {
+                              const newStatus = e.target.value;
+                              if (newStatus === item.status) return;
+                              try {
+                                await axios.put(`https://trip-agent-backend.onrender.com/api/booking/${item._id || item.id}`, { status: newStatus });
+                                fetchBookings();
+                              } catch (err) { showSnackbar("Failed to update status", "error"); }
+                            }} className="status-select" style={{
+                              padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--primary)',
+                              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                              background: 'var(--primary)', color: '#fff',
+                              outline: 'none'
+                            }}>
+                              {['assign agent', 'booked', 'contacted', 'on-trip', 'done'].map(s => (
+                                <option key={s} value={s} style={{ background: '#fff', color: 'var(--primary)' }}>
+                                  {s === 'on-trip' ? 'On Trip' : s === 'assign agent' ? 'Assign Agent' : s.charAt(0).toUpperCase() + s.slice(1)}
+                                </option>
                               ))}
-                            </div>
+                            </select>
                           </td>
                         </tr>
                       ))}

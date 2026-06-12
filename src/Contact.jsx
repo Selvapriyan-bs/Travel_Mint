@@ -236,7 +236,7 @@ export default function Contact() {
                 <div className="contact-map-overlay"></div>
                 <div className="contact-map-content">
                   <i data-lucide="map-pin" style={{ width: '40px', height: '40px', color: '#ff4b4b', filter: 'drop-shadow(0 0 8px rgba(255,75,75,0.7))' }}></i>
-                  <h4>TripAgent Chennai Office</h4>
+                  <h4>TripAgent Coimbatore Office</h4>
                   <p>Click to open in Google Maps</p>
                 </div>
                 <a href="https://maps.app.goo.gl/WzzMzRumgACS4cvU8" target="_blank" rel="noreferrer" className="contact-map-link"></a>

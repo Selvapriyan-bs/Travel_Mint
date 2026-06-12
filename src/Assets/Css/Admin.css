@@ -285,6 +285,11 @@
 }
 
 /* ─── BOOKING STATUS BADGES ──────────────────────────────────────────────── */
+.status-assign\ agent {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
 .status-booked {
   background: rgba(245, 158, 11, 0.15);
   color: #f59e0b;
@@ -308,29 +313,41 @@
 
 /* ─── STATUS ACTION BUTTONS IN BOOKING TABLE ───────────────────────────── */
 .btn-status {
-  padding: 4px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 8px;
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
-  background: var(--surface-alt);
-  color: var(--text-secondary);
-  transition: all 0.2s;
+  background: #f1f5f9;
+  color: #475569;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 .btn-status:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+  opacity: 0.9;
+}
+.btn-status:active {
+  transform: translateY(0);
 }
 .btn-status.active {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
+  cursor: default;
   opacity: 1;
+  transform: none;
+  box-shadow: none;
 }
+.btn-status[data-status="booked"] { background: #dbeafe; color: #1d4ed8; }
+.btn-status[data-status="contacted"] { background: #fef3c7; color: #b45309; }
+.btn-status[data-status="on-trip"] { background: #dcfce7; color: #15803d; }
+.btn-status[data-status="done"] { background: #e2e8f0; color: #475569; }
+.btn-status.active[data-status="booked"] { background: #2563eb; color: #fff; }
+.btn-status.active[data-status="contacted"] { background: #d97706; color: #fff; }
+.btn-status.active[data-status="on-trip"] { background: #16a34a; color: #fff; }
+.btn-status.active[data-status="done"] { background: #64748b; color: #fff; }
 
 .filter-tabs {
   display: flex;
