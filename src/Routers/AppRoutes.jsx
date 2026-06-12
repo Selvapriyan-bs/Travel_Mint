@@ -15,6 +15,7 @@ import BlogDetail from "../BlogDetail";
 import Privacy from "../Privacy";
 import Terms from "../Terms";
 import PackageDetails from "../PackageDetails";
+// import { img } from "../public/favicon.ico"
 
 function AppRoutes() {
     return (
@@ -33,6 +34,7 @@ function AppRoutes() {
             <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            {/* <Link rel="icon" href="/favicon.ico" /> */}
             <Route path="/package/:id" element={<PackageDetails />} />
         </Routes>
     );

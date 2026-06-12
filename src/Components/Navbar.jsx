@@ -28,6 +28,7 @@ export default function Navbar({ user, handleLogout, menuOpen, setMenuOpen, scro
   return (
     <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
       <div className="container nav">
+        {/* <Link rel="icon" href="/favicon.ico" /> */}
         <Link to="/" className="logo">
           <i data-lucide="compass"></i> Trip<span>Agent</span>
         </Link>
@@ -70,5 +71,6 @@ export default function Navbar({ user, handleLogout, menuOpen, setMenuOpen, scro
         </div>
       </div>
     </header>
+    
   );
 }

@@ -4,13 +4,15 @@ import axios from 'axios';
 import { useSnackbar } from './Components/SnackbarProvider';
 import Navbar from './Components/Navbar';
 import Footer from './Components/Footer';
+// import favicon from './assets/favicon.ico';
+// import {img} from "../public/favicon.ico"
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 export default function Booking() {
-  const showSnackbar = useSnackbar();
-  const [searchParams] = useSearchParams();
+  const showSnackbar = useSnackbar("");
+  const [searchParams] = useSearchParams("");
   const packageId = searchParams.get('packageId');
 
   const [scrolled, setScrolled] = useState(false);
@@ -170,7 +172,7 @@ export default function Booking() {
       currency: "INR",
       name: "TripAgent",
       description: `Booking for ${pkg?.title || destName}`,
-      image: pkg?.image || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=200&q=80",
+      image:  <img src="/favicon.ico" alt="favicon" /> || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=200&q=80",
       prefill: { name: `${details.firstName} ${details.lastName}`, email: details.email, contact: details.phone },
       notes: bookingData,
       theme: { color: "#f97316" },
