@@ -264,7 +264,7 @@ export default function Admin() {
 
   return (
     <div className={`admin-shell ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-
+<title>Admin Access</title>
       {/* Sidebar */}
       <aside className="admin-sidebar" id="adminSidebar">
         <div className="sidebar-brand">
@@ -847,8 +847,8 @@ export default function Admin() {
                   </div>
                   <div className="form-group">
                     <label>Display Badge</label>
-                    <select name="badge" value={formData.badge} onChange={handleInputChange}>
-                      <option value="New">New</option>
+                    <select name="badge" value={formData.badge}  onChange={handleInputChange}>
+                      <option value="New" >New</option>
                       <option value="Featured">Featured</option>
                       <option value="Best Seller">Best Seller</option>
                       <option value="Limited Offer">Limited Offer</option>

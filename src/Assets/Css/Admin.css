@@ -242,10 +242,29 @@
   transition: var(--transition);
 }
 
+.modal-window .form-group select {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.modal-window .form-group select option {
+  background: #fff;
+  color: var(--primary);
+}
 .modal-window input[type="email"]:focus,
 .modal-window input[type="tel"]:focus {
   border-color: var(--accent-color) !important;
   box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+
 }
 
 /* ─── PANEL HEADER WITH ACTION BUTTONS ────────────────────────────────── */
