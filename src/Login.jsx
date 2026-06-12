@@ -86,7 +86,7 @@ export default function Login() {
 
         localStorage.setItem("RegistrationData", JSON.stringify(userData));
         toast.success(response.data.message || "Login successful!");
-          navigate("/admin");
+          navigate("/");
         window.location.reload();
       }
     } catch (error) {
