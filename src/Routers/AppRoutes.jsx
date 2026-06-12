@@ -15,6 +15,9 @@ import BlogDetail from "../BlogDetail";
 import Privacy from "../Privacy";
 import Terms from "../Terms";
 import PackageDetails from "../PackageDetails";
+import ForgotPassword from "../ForgotPassword";
+// import ResetPassword from "../ResetPassword";
+// import favicon from "./assets/favicon.ico
 // import { img } from "../public/favicon.ico"
 
 function AppRoutes() {
@@ -35,6 +38,8 @@ function AppRoutes() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             {/* <Link rel="icon" href="/favicon.ico" /> */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
             <Route path="/package/:id" element={<PackageDetails />} />
         </Routes>
     );
