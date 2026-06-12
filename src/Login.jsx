@@ -79,7 +79,7 @@ export default function Login() {
       const response = await axios.post("https://trip-agent-backend.onrender.com/api/user/login", {
         email: userDetails.email,
         password: userDetails.password
-      },{timeout:1200});
+      }, { timeout: 30000 });
 
       if (response.data && response.data.data) {
         const userData = response.data.data;
@@ -111,7 +111,6 @@ export default function Login() {
       <Toaster position="top-center" toastOptions={{ style: { background: '#1e293b', color: '#f1f5f9', border: '1px solid #334155' } }} />
       <title>Login — TripAgent</title>
       <meta name="description" content="Log in to your TripAgent account to manage bookings, explore custom itineraries, and view saved trips." />
-      <link rel="stylesheet" href="assets/css/style.css" />
 
       {/* <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container nav">

@@ -118,7 +118,7 @@ export default function Homepage() {
 
   return (
     <div>
-      <link rel="stylesheet" href="App.css" />
+
       <title>TripAgent — Explore the World with Confidence</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="home" />
 

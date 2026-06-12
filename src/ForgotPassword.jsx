@@ -49,7 +49,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/user/forgot-password", { email },  { timeout: 15000 });
+      await axios.post("https://trip-agent-backend.onrender.com/api/user/forgot-password", { email },  { timeout: 15000 });
       setStep(2);
       showSnackbar("OTP sent to your email", "success");
     } catch (error) {
@@ -71,7 +71,7 @@ export default function ForgotPassword() {
     }
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/user/reset-password", { email, otp, newPassword }, { timeout: 15000 });
+      await axios.post("https://trip-agent-backend.onrender.com/api/user/reset-password", { email, otp, newPassword }, { timeout: 15000 });
       setIsSuccess(true);
       showSnackbar("Password reset successfully", "success");
     } catch (error) {
