@@ -226,7 +226,7 @@ export default function UserDashboard() {
               </table>
               <div style={{ marginTop: '20px', display: 'flex', gap: '15px' }}>
                 <button onClick={() => showSnackbar('PDF Ticket download started...', 'info')} className="btn btn-secondary btn-sm" style={{ fontSize: '0.82rem' }}>
-                  <i data-lucide="download"></i> Download Tickets
+                  <i data-lucide="download"></i> Download Receipt
                 </button>
                 <button onClick={() => showSnackbar('Please contact support at support@tripagent.com to modify this trip.', 'info')} className="btn btn-outline btn-sm" style={{ fontSize: '0.82rem' }}>
                   <i data-lucide="edit"></i> Request Modification
