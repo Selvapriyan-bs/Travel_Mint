@@ -328,7 +328,7 @@ export default function Search() {
 
   return (
     <div>
-      <title>Search Packages — TripAgent</title>
+      <title>Search Packages — TravelMint</title>
 
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="search" />
 

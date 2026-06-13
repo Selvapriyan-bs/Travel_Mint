@@ -119,12 +119,12 @@ export default function Homepage() {
   return (
     <div>
 
-      <title>TripAgent — Explore the World with Confidence</title>
+      <title>TravelMint — Explore the World with Confidence</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="home" />
 
       {/* Hero Section */}
       <section className="hero">
-        <video className="hero-video" autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80">
+        <video className="hero-video" autoPlay muted loop playsInline>
           <source src="/homepage_vid.mp4" type="video/mp4" />
         </video>
         <div className="hero-overlay"></div>
@@ -357,7 +357,7 @@ export default function Homepage() {
                 <FontAwesomeIcon icon={faStar} />
                 <FontAwesomeIcon icon={faStar} />
               </div>
-              <p className="testimonial-text">"Our trip to Kyoto was flawless! The hotel was stunning, and the private guides recommended by TripAgent were extremely knowledgeable. Highly recommend!"</p>
+              <p className="testimonial-text">"Our trip to Kyoto was flawless! The hotel was stunning, and the private guides recommended by TravelMint were extremely knowledgeable. Highly recommend!"</p>
               <div className="testimonial-user">
                 <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" alt="Sarah Jenkins" />
                 <div className="testimonial-user-info">
@@ -376,7 +376,7 @@ export default function Homepage() {
                 <FontAwesomeIcon icon={faStar} />
                 <FontAwesomeIcon icon={faStar} />
               </div>
-              <p className="testimonial-text">"Booking through TripAgent was incredibly smooth. They handled flights, local transport, and hotels. The customer support answered our questions in minutes."</p>
+              <p className="testimonial-text">"Booking through TravelMint was incredibly smooth. They handled flights, local transport, and hotels. The customer support answered our questions in minutes."</p>
               <div className="testimonial-user">
                 <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Marcus Chen" />
                 <div className="testimonial-user-info">

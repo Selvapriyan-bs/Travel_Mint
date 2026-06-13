@@ -170,7 +170,7 @@ export default function Booking() {
       key: "rzp_test_T0DZh4Na6BlOyI",
       amount: amount * 100,
       currency: "INR",
-      name: "TripAgent",
+      name: "TravelMint",
       description: `Booking for ${pkg?.title || destName}`,
       image:  <img src="/favicon.ico" alt="favicon" /> || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=200&q=80",
       prefill: { name: `${details.firstName} ${details.lastName}`, email: details.email, contact: details.phone },
@@ -232,7 +232,7 @@ export default function Booking() {
 
   return (
     <div>
-      <title>{pkg ? `Book ${pkg.title}` : 'Book Your Journey'} — TripAgent</title>
+      <title>{pkg ? `Book ${pkg.title}` : 'Book Your Journey'} — TravelMint</title>
 
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="" />
 

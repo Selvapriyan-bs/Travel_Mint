@@ -19,7 +19,7 @@ export default function Privacy() {
   });
 
   useEffect(() => {
-    document.title = "Privacy Policy — TripAgent";
+    document.title = "Privacy Policy — TravelMint";
   }, []);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function Privacy() {
 
   return (
     <div>
-      <title>Privacy Policy — TripAgent</title>
+      <title>Privacy Policy — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="" />
 
       <section className="hero" style={{ minHeight: '35vh' }}>

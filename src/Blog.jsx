@@ -92,14 +92,14 @@ export default function Blog() {
 
   return (
     <div>
-      <title>Travel Guides & Blog — TripAgent</title>
+      <title>Travel Guides & Blog — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="blog" />
 
       <section className="hero" style={{ minHeight: '45vh' }}>
         <div className="hero-bg" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80')" }}></div>
         <div className="hero-overlay"></div>
         <div className="container hero-content animate-fade-in" style={{ textAlign: 'center', margin: '0 auto' }}>
-          <h1 className="font-serif">TripAgent Travel Blog</h1>
+          <h1 className="font-serif">TravelMint Travel Blog</h1>
           <p>Read expert packing tips, dining recommendations, and cultural itineraries curated by global destination specialists.</p>
         </div>
       </section>

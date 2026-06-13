@@ -35,7 +35,7 @@ export default function Footer() {
       <div className="container footer-grid">
         <div className="footer-col">
           <Link to="/" className="footer-logo">
-            <i data-lucide="compass"></i> Trip<span>Agent</span>
+            <i data-lucide="compass"></i> Travel<span>Mint</span>
           </Link>
           <p>We are a leading online travel agency focused on curating premium, safe, and stress-free holiday packages for travelers worldwide.</p>
           <div className="social-links">
@@ -72,7 +72,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="container footer-bottom">
-        <p>&copy; 2026 TripAgent. All rights reserved. Built with love for travel.</p>
+        <p>&copy; 2026 TravelMint. All rights reserved. Built with love for travel.</p>
         <p>Terms of Service &bull; Privacy Policy</p>
       </div>
     </footer>

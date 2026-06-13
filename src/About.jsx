@@ -74,7 +74,7 @@ export default function About() {
 
   return (
     <div>
-      <title>About Us — TripAgent</title>
+      <title>About Us — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="about" />
 
       {/* Hero Section */}
@@ -94,7 +94,7 @@ export default function About() {
             <div>
               <h2 className="font-serif" style={{ fontSize: '2rem', marginBottom: '16px' }}>Crafting Dreams Into Reality</h2>
               <p style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
-                Founded in 2020, TripAgent emerged from a shared passion for exploration. We wanted to build a modern gateway that takes the anxiety out of travel planning, replacing spreadsheets and endless booking tabs with structured, stress-free, handpicked holiday itineraries.
+                Founded in 2020, TravelMint emerged from a shared passion for exploration. We wanted to build a modern gateway that takes the anxiety out of travel planning, replacing spreadsheets and endless booking tabs with structured, stress-free, handpicked holiday itineraries.
               </p>
               <p style={{ color: 'var(--text-secondary)' }}>
                 Over the years, we have grown from a small group of travel enthusiasts to a global network of local guides, transport experts, and luxury hotel partners. Today, we manage travels in over 50 countries, providing top-tier booking security, round-the-clock live assistance, and curated trips customized for every traveler type.
@@ -146,7 +146,7 @@ export default function About() {
         {/* Statistics Section */}
         <section className="section container" style={{ textAlign: 'center' }}>
           <div className="section-header">
-            <h2>TripAgent in Numbers</h2>
+            <h2>TravelMint in Numbers</h2>
             <p>Our rapid growth reflects our commitment to quality travel support.</p>
           </div>
           <div className="grid-3" style={{ gap: '30px', marginTop: '20px' }}>
@@ -173,7 +173,7 @@ export default function About() {
           <div className="container">
             <div className="section-header">
               <h2>Meet Our Founders</h2>
-              <p>The travel specialists and technology leaders steering the TripAgent ship.</p>
+              <p>The travel specialists and technology leaders steering the TravelMint ship.</p>
             </div>
             <div className="grid-3" style={{ gap: '30px' }}>
               {/* Leader 1 */}

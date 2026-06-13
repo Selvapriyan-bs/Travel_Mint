@@ -109,7 +109,7 @@ export default function UserDashboard() {
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--bg-dark)', padding: '20px' }}>
-        <title>Access Denied — TripAgent</title>
+        <title>Access Denied — TravelMint</title>
         <div className="card-premium" style={{ maxWidth: '450px', width: '100%', textAlign: 'center', padding: '40px 30px', height: 'auto' }}>
           <div style={{ width: '64px', height: '64px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: '50%', display: 'grid', placeItems: 'center', margin: '0 auto 24px auto' }}>
             <i data-lucide="lock" style={{ width: '32px', height: '32px' }}></i>
@@ -129,7 +129,7 @@ export default function UserDashboard() {
 
   return (
     <div>
-      <title>My Dashboard — TripAgent</title>
+      <title>My Dashboard — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="" />
 
       {/* Hero Section */}

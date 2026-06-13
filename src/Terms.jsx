@@ -19,7 +19,7 @@ export default function Terms() {
   });
 
   useEffect(() => {
-    document.title = "Terms of Service — TripAgent";
+    document.title = "Terms of Service — TravelMint";
   }, []);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function Terms() {
 
   return (
     <div>
-      <title>Terms of Service — TripAgent</title>
+      <title>Terms of Service — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="" />
 
       <section className="hero" style={{ minHeight: '35vh' }}>
@@ -53,7 +53,7 @@ export default function Terms() {
         <div className="hero-overlay"></div>
         <div className="container hero-content animate-fade-in" style={{ textAlign: 'center', margin: '0 auto' }}>
           <h1 className="font-serif">Terms of Service</h1>
-          <p>Rules, guidelines, and policies for using TripAgent</p>
+          <p>Rules, guidelines, and policies for using TravelMint</p>
         </div>
       </section>
 
@@ -64,7 +64,7 @@ export default function Terms() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: '1.8' }}>
             <div>
               <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>1. Acceptance of Terms</h3>
-              <p>By creating an account, accessing, or using TripAgent's platform, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you may not use our services. We recommend reviewing these terms periodically, as they may be updated.</p>
+              <p>By creating an account, accessing, or using TravelMint's platform, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you may not use our services. We recommend reviewing these terms periodically, as they may be updated.</p>
             </div>
 
             <div>
@@ -84,17 +84,17 @@ export default function Terms() {
 
             <div>
               <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>5. User Conduct</h3>
-              <p>You agree not to misuse the platform for any unlawful purpose, engage in fraudulent activity, impersonate others, or violate any applicable local, national, or international laws. TripAgent reserves the right to suspend or terminate accounts found violating these terms without prior notice.</p>
+              <p>You agree not to misuse the platform for any unlawful purpose, engage in fraudulent activity, impersonate others, or violate any applicable local, national, or international laws. TravelMint reserves the right to suspend or terminate accounts found violating these terms without prior notice.</p>
             </div>
 
             <div>
               <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>6. Limitation of Liability</h3>
-              <p>TripAgent acts as a booking intermediary and is not liable for issues arising from third-party services including airlines, hotels, transport operators, or tour guides beyond our reasonable control. Our total liability is limited to the amount paid for the specific booking giving rise to the claim.</p>
+              <p>TravelMint acts as a booking intermediary and is not liable for issues arising from third-party services including airlines, hotels, transport operators, or tour guides beyond our reasonable control. Our total liability is limited to the amount paid for the specific booking giving rise to the claim.</p>
             </div>
 
             <div>
               <h3 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>7. Intellectual Property</h3>
-              <p>All content on the TripAgent platform — including text, images, logos, and software — is our property or that of our licensors and is protected by copyright and trademark laws. You may not reproduce, distribute, or create derivative works without explicit written permission.</p>
+              <p>All content on the TravelMint platform — including text, images, logos, and software — is our property or that of our licensors and is protected by copyright and trademark laws. You may not reproduce, distribute, or create derivative works without explicit written permission.</p>
             </div>
 
             <div>

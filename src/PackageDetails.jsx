@@ -87,7 +87,7 @@ export default function PackageDetails() {
 
   return (
     <div>
-      <title>{pkg.title || 'Package Details'} — TripAgent</title>
+      <title>{pkg.title || 'Package Details'} — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="" />
 
       {/* Hero */}

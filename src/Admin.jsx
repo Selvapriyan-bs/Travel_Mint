@@ -276,7 +276,7 @@ export default function Admin() {
       <aside className="admin-sidebar" id="adminSidebar">
         <div className="sidebar-brand">
           <div className="brand-logo"><Compass size={20} /></div>
-          <span className="brand-text">Trip<span>Agent</span></span>
+          <span className="brand-text">Travel<span>Mint</span></span>
           <span className="sidebar-badge">Admin</span>
         </div>
 
@@ -330,7 +330,7 @@ export default function Admin() {
             </button>
             <div>
               <div className="page-title" style={{ textTransform: 'capitalize' }}>{activeView}</div>
-              <div className="page-subtitle">Overview of TripAgent {activeView}</div>
+              <div className="page-subtitle">Overview of TravelMint {activeView}</div>
             </div>
           </div>
 

@@ -22,7 +22,7 @@ export default function Contact() {
 
   const faqs = [
     {
-      question: "What is TripAgent's cancellation and refund policy?",
+      question: "What is TravelMint's cancellation and refund policy?",
       answer: "Refund policies vary depending on the destination and how close the cancellation is to the departure date. Generally, cancellations made more than 30 days before departure are eligible for a 90% refund, while cancellations within 7 days receive a 20% refund. You can request a cancellation directly from your Dashboard."
     },
     {
@@ -31,7 +31,7 @@ export default function Contact() {
     },
     {
       question: "Can I customize the day-by-day itineraries of featured deals?",
-      answer: "Absolutely! TripAgent specializes in customized travel. Once you match with an expert travel agent or select a package, you can request adjustments to hotels, add free days, or include custom excursions."
+      answer: "Absolutely! TravelMint specializes in customized travel. Once you match with an expert travel agent or select a package, you can request adjustments to hotels, add free days, or include custom excursions."
     },
     {
       question: "Do you offer international travel insurance coverage?",
@@ -59,7 +59,7 @@ export default function Contact() {
 
   // Dynamic Document Title Management
   useEffect(() => {
-    document.title = "Contact Us — TripAgent";
+    document.title = "Contact Us — TravelMint";
   }, []);
 
   useEffect(() => {
@@ -236,7 +236,7 @@ export default function Contact() {
                 <div className="contact-map-overlay"></div>
                 <div className="contact-map-content">
                   <i data-lucide="map-pin" style={{ width: '40px', height: '40px', color: '#ff4b4b', filter: 'drop-shadow(0 0 8px rgba(255,75,75,0.7))' }}></i>
-                  <h4>TripAgent Coimbatore Office</h4>
+                  <h4>TravelMint Coimbatore Office</h4>
                   <p>Click to open in Google Maps</p>
                 </div>
                 <a href="https://maps.app.goo.gl/WzzMzRumgACS4cvU8" target="_blank" rel="noreferrer" className="contact-map-link"></a>

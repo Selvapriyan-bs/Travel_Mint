@@ -9,7 +9,7 @@ export default function Navbar({ user, handleLogout, menuOpen, setMenuOpen, scro
       <header className={`site-header hero-header ${scrolled ? 'scrolled' : ''}`} id="site-header">
         <div className="container nav">
           <Link to="/" className="logo">
-            <i data-lucide="compass"></i> Trip<span>Agent</span>
+            <i data-lucide="compass"></i> Travel<span>Mint</span>
           </Link>
           <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
             <li><Link to="/" className={activePage === 'home' ? 'active' : ''}>Home</Link></li>
@@ -30,7 +30,7 @@ export default function Navbar({ user, handleLogout, menuOpen, setMenuOpen, scro
       <div className="container nav">
         {/* <Link rel="icon" href="/favicon.ico" /> */}
         <Link to="/" className="logo">
-          <i data-lucide="compass"></i> Trip<span>Agent</span>
+          <i data-lucide="compass"></i> Travel<span>Mint</span>
         </Link>
         <ul className={`nav-links ${menuOpen ? 'open' : ''}`} id="nav-links">
           <li><Link to="/" className={activePage === 'home' ? 'active' : ''}>Home</Link></li>

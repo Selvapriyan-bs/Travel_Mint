@@ -103,8 +103,8 @@ export default function Destination() {
 
   return (
     <div>
-      <title>Top Destinations — TripAgent</title>
-      <meta name="description" content="Explore TripAgent's curated handpicked travel destinations including Paris, Bali, Kyoto, New York, Sydney, and the Swiss Alps." />
+      <title>Top Destinations — TravelMint</title>
+      <meta name="description" content="Explore TravelMint's curated handpicked travel destinations including Paris, Bali, Kyoto, New York, Sydney, and the Swiss Alps." />
       {/* <link rel="stylesheet" href="assets/css/style.css" /> */}
 
       {/* <!-- Header --> */}

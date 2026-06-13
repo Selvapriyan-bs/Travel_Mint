@@ -83,7 +83,7 @@ export default function ForgotPassword() {
 
   return (
     <div>
-      <title>Reset Password — TripAgent</title>
+      <title>Reset Password — TravelMint</title>
 
       <Navbar simple menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} />
 

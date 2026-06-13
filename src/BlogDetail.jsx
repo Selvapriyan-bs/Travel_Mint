@@ -65,7 +65,7 @@ export default function BlogDetail() {
     const title = article.title || 'Travel Article';
 
     const intros = [
-      `When it comes to ${cat === 'dining' ? 'culinary travel' : cat === 'culture' ? 'cultural exploration' : 'travel'}, few places capture the imagination quite like the destinations we feature here at TripAgent.`,
+      `When it comes to ${cat === 'dining' ? 'culinary travel' : cat === 'culture' ? 'cultural exploration' : 'travel'}, few places capture the imagination quite like the destinations we feature here at TravelMint.`,
       `There's something magical about discovering new places, and ${title} is no exception.`,
       `Travel enthusiasts around the world have been talking about ${title}, and for good reason.`,
     ];
@@ -150,7 +150,7 @@ export default function BlogDetail() {
 
   return (
     <div>
-      <title>{post.title || 'Blog Post'} — TripAgent</title>
+      <title>{post.title || 'Blog Post'} — TravelMint</title>
       <Navbar user={user} handleLogout={handleLogout} menuOpen={menuOpen} setMenuOpen={setMenuOpen} scrolled={scrolled} activePage="blog" />
 
       <section className="hero" style={{ minHeight: '50vh' }}>

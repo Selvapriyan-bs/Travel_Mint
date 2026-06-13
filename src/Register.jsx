@@ -21,7 +21,7 @@ export default function Register() {
 
   // Sync window browser title dynamically
   useEffect(() => {
-    document.title = "Create Account — TripAgent";
+    document.title = "Create Account — TravelMint";
   }, []);
 
   const handleChange = (e) => {
@@ -168,7 +168,7 @@ export default function Register() {
               <div style={{ color: 'var(--color-primary, #0ea5e9)', fontSize: '2.5rem', marginBottom: '10px' }}>
                 <i data-lucide="user-plus" style={{ width: '48px', height: '48px' }}></i>
               </div>
-              <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px', color: '#f4f2f2' }}>Join TripAgent</h2>
+              <h2 className="font-serif" style={{ fontSize: '1.8rem', marginBottom: '8px', color: '#f4f2f2' }}>Join TravelMint</h2>
               <p style={{ color: '#adaaaa', fontSize: '0.95rem' }}>Sign up to access tailored deals and tracking tools</p>
             </div>
 
